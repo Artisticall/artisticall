@@ -89,6 +89,11 @@ dependencies {
 
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.2")
 
+    //Navigation with compose
+    val nav_version = "2.8.4"
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+
+
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
