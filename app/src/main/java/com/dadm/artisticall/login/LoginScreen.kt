@@ -25,8 +25,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.VerticalDivider
@@ -70,26 +73,60 @@ fun LoginScreen(
 
             Row(
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
-                Text(
-                    text = "Invitado",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    modifier = Modifier.padding(16.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically)
+                ) {
+                    Text(
+                        text = "Invitado",
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.Center)
+                    )
+                }
                 VerticalDivider(color = Color.Gray, modifier = Modifier.height(48.dp))
-                OutlinedButton(
-                    onClick = {
-                        lifecycleOwner.lifecycleScope.launch {
-                            isSignedIn = googleSignInClient.signIn()
-                            if (isSignedIn) {
-                                navController.navigate("lobby_screen")
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            lifecycleOwner.lifecycleScope.launch {
+                                isSignedIn = googleSignInClient.signIn()
+                                if (isSignedIn) {
+                                    navController.navigate("lobby_screen")
+                                }
                             }
                         }
-                    }
+                        .background(Color.Transparent)
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically)
                 ) {
-                    Text(text = "Sign In with Google", fontSize = 16.sp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.google_logo),
+                            contentDescription = "Google Logo",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Google",
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+
+                    }
                 }
             }
 
@@ -100,11 +137,15 @@ fun LoginScreen(
                 label = { Text("Nickname") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
-                singleLine = true
+                    .padding(horizontal = 32.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surface
+                    ),
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
                     if (username.text.isNotEmpty()) {
@@ -113,7 +154,7 @@ fun LoginScreen(
                         Toast.makeText(context, "Por favor, ingresa un nickname", Toast.LENGTH_SHORT).show()
                     }
                 },
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier.padding(top = 16.dp),
             ) {
                 Text(text = "Jugar", fontSize = 16.sp)
             }
