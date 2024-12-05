@@ -1,9 +1,15 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
 }
+
+
+val clientId: String = gradleLocalProperties(rootDir, providers)
+    .getProperty("client_id", "")
 
 android {
     namespace = "com.dadm.artisticall"
@@ -17,7 +23,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        resValue(
+            "string",
+            "client_id",
+            "\"" + clientId + "\""
+        )
     }
+
 
     buildTypes {
         release {
@@ -73,6 +86,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.2")
 
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)

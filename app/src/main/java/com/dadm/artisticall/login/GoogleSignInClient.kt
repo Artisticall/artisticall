@@ -1,12 +1,14 @@
 package com.dadm.artisticall.login
 
 import android.content.Context
+import android.content.res.Resources
 import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import com.dadm.artisticall.R
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -88,7 +90,7 @@ class GoogleSignInClient (
                 GetGoogleIdOption.Builder()
                     .setFilterByAuthorizedAccounts(false)
                     .setServerClientId(
-                        "" //TODO: Make this variable as a secret
+                        context.getString(R.string.client_id)
                     )
                     .setAutoSelectEnabled(false)
                     .build()
