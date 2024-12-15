@@ -61,6 +61,12 @@ fun LobbyScreen(
                 ) {
                     Text(text = "Solo")
                 }
+                Button(onClick = {
+                    navController.navigate("drawing_screen")
+                    }
+                ) {
+                    Text("Dibujar")
+                }
             }
             Spacer(modifier = Modifier.padding(16.dp))
             OutlinedButton(onClick = {
