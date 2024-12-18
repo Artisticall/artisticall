@@ -71,4 +71,16 @@ class DrawingView @JvmOverloads constructor(
         isEraserActive = true
         paint.color = Color.WHITE
     }
+    // Cambia el tamaño del borrador
+    fun setEraserSize(size: Float) {
+        if (isEraserActive) {
+            paint.strokeWidth = size // Ajusta el tamaño del borrador
+        }
+    }
+
+    fun clearCanvas() {
+        paths.clear() // Borra todos los caminos dibujados
+        path.reset()  // Resetea el camino actual
+        invalidate()  // Vuelve a dibujar la vista
+    }
 }

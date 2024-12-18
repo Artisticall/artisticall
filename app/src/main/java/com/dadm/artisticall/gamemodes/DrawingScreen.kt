@@ -9,6 +9,8 @@ import androidx.compose.foundation.clickable
 import android.graphics.Color as AndroidColor
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.toArgb
@@ -31,7 +33,7 @@ fun DrawingScreen() {
         Color(AndroidColor.CYAN),
         Color(AndroidColor.MAGENTA),
         Color(AndroidColor.BLACK),
-        Color(AndroidColor.WHITE)
+        Color(0xFF6A4E23)
     )
     val defaultLineSize = 10f
     var currentColor by remember { mutableStateOf(Color.Black) }
@@ -111,14 +113,48 @@ fun DrawingScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Activar borrador
-            Button(
-                onClick = {
-                    drawingView.activateEraser()
-                },
+// Selector de tamaño del borrador (agregado después de la fila de líneas)
+            Text(
+                text = "Tamaño del borrador",
+                modifier = Modifier.padding(bottom = 8.dp),
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Borrador")
+                // Borrador pequeño
+                Button(onClick = {
+                    drawingView.setEraserSize(15f) // Tamaño pequeño del borrador
+                    drawingView.activateEraser()   // Activamos el borrador
+                }) {
+                    Text("Pequeño")
+                }
+
+                // Borrador grande
+                Button(onClick = {
+                    drawingView.setEraserSize(30f) // Tamaño grande del borrador
+                    drawingView.activateEraser()   // Activamos el borrador
+                }) {
+                    Text("Grande")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botón de limpiar (usando ícono para no sobrecargar)
+            IconButton(
+                onClick = {
+                    drawingView.clearCanvas() // Limpiar la pizarra
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete, // Ícono de borrar
+                    contentDescription = "Limpiar Pizarra",
+                    tint = Color.Red
+                )
             }
         }
     }
