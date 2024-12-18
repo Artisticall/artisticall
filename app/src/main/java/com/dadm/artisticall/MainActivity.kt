@@ -1,5 +1,6 @@
 package com.dadm.artisticall
 
+import LobbyScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,7 +12,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dadm.artisticall.gamemodes.SoloScreen
 import com.dadm.artisticall.gamemodes.DrawingScreen
-import com.dadm.artisticall.lobby.LobbyScreen
 import com.dadm.artisticall.login.LoginScreen
 import com.dadm.artisticall.ui.theme.ArtisticallTheme
 
