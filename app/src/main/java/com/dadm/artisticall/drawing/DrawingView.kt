@@ -83,4 +83,14 @@ class DrawingView @JvmOverloads constructor(
         path.reset()  // Resetea el camino actual
         invalidate()  // Vuelve a dibujar la vista
     }
+
+    // En la clase DrawingView
+    fun getBitmap(): Bitmap {
+        val width = width
+        val height = height
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        draw(canvas) // Dibuja sobre el canvas del bitmap
+        return bitmap
+    }
 }

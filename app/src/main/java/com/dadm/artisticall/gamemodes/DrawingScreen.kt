@@ -1,5 +1,7 @@
 package com.dadm.artisticall.gamemodes
 
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,9 +22,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.dadm.artisticall.drawing.DrawingView
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import kotlinx.coroutines.delay
 
 @Composable
-fun DrawingScreen() {
+fun DrawingScreen(navController: NavController) {
     val context = LocalContext.current
     val drawingView = remember { DrawingView(context) }
     val colors = listOf(
@@ -39,10 +45,41 @@ fun DrawingScreen() {
     var currentColor by remember { mutableStateOf(Color.Black) }
     var currentLineSize by remember { mutableStateOf(defaultLineSize) }
 
+    // Estado para el temporizador
+    var timeLeft by remember { mutableStateOf(50) }
+    var isTimerRunning by remember { mutableStateOf(true) }
+
+    // Función para guardar la imagen
+    fun saveImage() {
+        val bitmap = drawingView.getBitmap()
+        val file = File(context.cacheDir, "drawing_image.png")
+        try {
+            val outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+
+            val encodedFilePath = Uri.encode(file.absolutePath)
+            navController.navigate("guess_screen/$encodedFilePath")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    // Iniciar el temporizador
+    LaunchedEffect(isTimerRunning) {
+        while (isTimerRunning && timeLeft > 0) {
+            delay(1000)
+            timeLeft -= 1
+        }
+        if (timeLeft == 0) {
+            saveImage()
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Vista de dibujo
         AndroidView(
             factory = { drawingView },
             modifier = Modifier
@@ -50,16 +87,15 @@ fun DrawingScreen() {
                 .weight(1f)
         )
 
-        // Controles
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.LightGray)
+                .background(Color(0xFF1E2D36))
                 .padding(8.dp)
         ) {
-            // Selector de colores
             Text(
                 text = "Selecciona un color",
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 8.dp),
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -71,19 +107,19 @@ fun DrawingScreen() {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .background(color = color, shape = RoundedCornerShape(8.dp))  // Color y forma definidos
+                            .background(color = color, shape = RoundedCornerShape(8.dp))
                             .clickable {
                                 currentColor = color
-                                drawingView.setColor(color.toArgb()) // Convertir el color Compose a un Int usando toArgb()
+                                drawingView.setColor(color.toArgb())
                             }
                     )
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Selector de tamaño de línea
             Text(
                 text = "Grosor de la línea",
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 8.dp),
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -91,72 +127,118 @@ fun DrawingScreen() {
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Button(onClick = {
-                    currentLineSize = 5f
-                    drawingView.setLineSize(5f)
-                }) {
+                Button(
+                    onClick = {
+                        currentLineSize = 5f
+                        drawingView.setLineSize(5f)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color(0xFFFFA040)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFFA040))
+                ) {
                     Text("Fina")
                 }
-                Button(onClick = {
-                    currentLineSize = 20f
-                    drawingView.setLineSize(20f)
-                }) {
+                Button(
+                    onClick = {
+                        currentLineSize = 20f
+                        drawingView.setLineSize(20f)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color(0xFFFFA040)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFFA040))
+                ) {
                     Text("Gruesa")
                 }
-                Button(onClick = {
-                    currentLineSize = defaultLineSize
-                    drawingView.setLineSize(defaultLineSize)
-                }) {
+                Button(
+                    onClick = {
+                        currentLineSize = defaultLineSize
+                        drawingView.setLineSize(defaultLineSize)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color(0xFFFFA040)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFFA040))
+                ) {
                     Text("Restaurar")
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-// Selector de tamaño del borrador (agregado después de la fila de líneas)
             Text(
                 text = "Tamaño del borrador",
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 8.dp),
                 style = MaterialTheme.typography.bodyMedium
             )
-
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Borrador pequeño
-                Button(onClick = {
-                    drawingView.setEraserSize(15f) // Tamaño pequeño del borrador
-                    drawingView.activateEraser()   // Activamos el borrador
-                }) {
+                Button(
+                    onClick = {
+                        drawingView.setEraserSize(15f)
+                        drawingView.activateEraser()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color(0xFFFFA040)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFFA040))
+                ) {
                     Text("Pequeño")
                 }
-
-                // Borrador grande
-                Button(onClick = {
-                    drawingView.setEraserSize(30f) // Tamaño grande del borrador
-                    drawingView.activateEraser()   // Activamos el borrador
-                }) {
+                Button(
+                    onClick = {
+                        drawingView.setEraserSize(30f)
+                        drawingView.activateEraser()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color(0xFFFFA040)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFFA040))
+                ) {
                     Text("Grande")
+                }
+                Button(
+                    onClick = {
+                        drawingView.clearCanvas()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color(0xFFFFA040)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFFFA040))
+                ) {
+                    Text("Borrar Pizarra")
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón de limpiar (usando ícono para no sobrecargar)
-            IconButton(
-                onClick = {
-                    drawingView.clearCanvas() // Limpiar la pizarra
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete, // Ícono de borrar
-                    contentDescription = "Limpiar Pizarra",
-                    tint = Color.Red
-                )
-            }
+            Text(
+                text = "Tiempo restante: $timeLeft segundos",
+                color = Color.White,
+                modifier = Modifier.padding(top = 8.dp),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
+
+
+
+
 
