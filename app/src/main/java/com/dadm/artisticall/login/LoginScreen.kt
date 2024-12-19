@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.ui.graphics.Color
@@ -39,6 +40,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import com.dadm.artisticall.R
+import com.dadm.artisticall.ui.theme.backgroundDark
 import kotlinx.coroutines.launch
 
 
@@ -55,7 +57,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color(0xFF1E2D36)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -139,7 +141,7 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.surface
+                        color = Color(0xFF1E2D36)
                     ),
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp)
@@ -154,7 +156,11 @@ fun LoginScreen(
                         Toast.makeText(context, "Por favor, ingresa un nickname", Toast.LENGTH_SHORT).show()
                     }
                 },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFFA040),
+                ),
                 modifier = Modifier.padding(top = 16.dp),
+
             ) {
                 Text(text = "Jugar", fontSize = 16.sp)
             }
