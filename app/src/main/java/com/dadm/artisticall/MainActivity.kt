@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.dadm.artisticall.gamemodes.SoloScreen
 import com.dadm.artisticall.gamemodes.DrawingScreen
 import com.dadm.artisticall.gamemodes.GuessScreen
+import com.dadm.artisticall.lobby.PointsScreen
 import com.dadm.artisticall.login.LoginScreen
 import com.dadm.artisticall.ui.theme.ArtisticallTheme
 
@@ -45,7 +46,10 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("guess_screen/{filePath}") { backStackEntry ->
                             val filePath = backStackEntry.arguments?.getString("filePath") ?: ""
-                            GuessScreen(filePath) // Pasar la ruta del archivo a GuessScreen
+                            GuessScreen(filePath, navController) // Pasar la ruta del archivo a GuessScreen
+                        }
+                        composable("points_screen") {
+                            PointsScreen(navController)
                         }
                     },
                     enterTransition = {

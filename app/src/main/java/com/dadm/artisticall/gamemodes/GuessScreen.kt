@@ -16,10 +16,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import android.net.Uri
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GuessScreen(filePath: String) {
+fun GuessScreen(filePath: String, navController: NavController) {
     // Decodificar la ruta del archivo
     val decodedFilePath = Uri.decode(filePath)
     val bitmap = BitmapFactory.decodeFile(decodedFilePath)
@@ -65,7 +66,7 @@ fun GuessScreen(filePath: String) {
         // Botón para verificar la adivinanza
         Button(
             onClick = {
-                // Acción del botón
+                navController.navigate("points_screen")
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(

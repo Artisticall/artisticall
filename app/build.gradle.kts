@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.firebase.common.ktx)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.androidx.foundation.android)
+    implementation(libs.firebase.crashlytics.buildtools)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,5 +103,7 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
+
+    implementation("com.google.code.gson:gson:2.8.8")
 
 }
