@@ -1,11 +1,11 @@
 package com.dadm.artisticall.lobby
 
-import LobbyButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -136,8 +136,12 @@ fun PointsScreen(navController: NavController) {
                         .padding(horizontal = 32.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    LobbyButton(text = "Lobby") {
-                        navController.navigate("lobby_screen")
+                    Button(
+                        onClick = {
+                            navController.navigate("lobby_screen")
+                        },
+                    ) {
+                        Text(text = "Lobby", fontSize = 16.sp)
                     }
                 }
             }

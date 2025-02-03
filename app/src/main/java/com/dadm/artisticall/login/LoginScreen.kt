@@ -41,6 +41,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import com.dadm.artisticall.R
 import com.dadm.artisticall.ui.theme.backgroundDark
+import com.dadm.artisticall.ui.theme.secondaryDark
 import kotlinx.coroutines.launch
 
 
@@ -57,7 +58,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E2D36)),
+            .background(backgroundDark),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -157,7 +158,7 @@ fun LoginScreen(
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFA040),
+                    containerColor = secondaryDark,
                 ),
                 modifier = Modifier.padding(top = 16.dp),
 
