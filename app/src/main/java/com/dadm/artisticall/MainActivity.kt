@@ -7,6 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,6 +26,7 @@ import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
 import com.dadm.artisticall.gamemodes.GameSoloScreen
 import com.dadm.artisticall.gamemodes.GuessScreen
+import com.dadm.artisticall.lobby.GameMode
 import com.dadm.artisticall.lobby.PointsScreen
 import com.dadm.artisticall.login.LoginScreen
 import com.dadm.artisticall.ui.theme.ArtisticallTheme
@@ -34,6 +39,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             ArtisticallTheme {
                 val navController = rememberNavController()
+                var selectedGameMode by remember { mutableStateOf<GameMode?>(null) }
+
+                val onGameModeSelected: (GameMode?) -> Unit = { mode ->
+                    selectedGameMode = mode
+                }
                 NavHost(
                     navController = navController,
                     startDestination = "login_screen",
@@ -49,8 +59,9 @@ class MainActivity : ComponentActivity() {
                             LobbyScreen(
                                 navController = navController,
                                 lobbyCode = lobbyCode,
-                                username = username
-
+                                username = username,
+                                selectedGameMode = selectedGameMode,
+                                onGameModeSelected = onGameModeSelected
                             )
                         }
                         composable("game_normal_screen") {

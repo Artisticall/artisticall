@@ -34,6 +34,8 @@ import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.dadm.artisticall.lobby.GameMode
+import com.dadm.artisticall.lobby.GamesList
 import com.dadm.artisticall.ui.theme.surfaceDark
 import com.dadm.artisticall.ui.theme.AppTypography
 import com.dadm.artisticall.ui.theme.backgroundDark
@@ -48,26 +50,14 @@ import com.google.firebase.firestore.firestore
 fun LobbyScreen(
     navController: NavController,
     lobbyCode: String?,
-    username: String?
+    username: String?,
+    selectedGameMode: GameMode?,
+    onGameModeSelected: (GameMode?) -> Unit
 ) {
-
 
     val clipboardManager = LocalContext.current.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val users = remember { mutableStateOf(listOf<UserData>()) }
     val maxPlayers = 8
-    val gameModes = listOf(
-        GameMode("Normal", "Juego clásico", "game_normal_screen"),
-        GameMode("Solo", "Juega en solitario", "game_solo_screen"),
-        GameMode("Adivina la Palabra", "Adivina la palabra oculta", "game_adivina_screen"),
-        GameMode("¿Qué es esto?", "Intenta adivinar el objeto a partir de pistas", "game_que_es_esto_screen"),
-        GameMode("Batalla de Pinceles", "Compite dibujando", "game_batalla_pinceles_screen"),
-        GameMode("Ponle Título", "Ponle título a una imagen", "game_ponle_titulo_screen"),
-        GameMode("Érase una vez", "Crea historias de manera colaborativa", "game_erase_una_vez_screen"),
-        GameMode("Modo Libre", "Dibuja lo que quieras", "game_libre_screen"),
-        GameMode("Ojo de Águila", "Adivina el objeto a partir de un pequeño detalle", "game_ojo_de_aguila_screen"),
-        GameMode("Modo Colaborativo", "Trabaja en equipo para lograr un objetivo", "game_colaborativo_screen"),
-        GameMode("Modo Desafío", "Desafíos rápidos para ganar puntos", "game_desafio_screen")
-    )
 
     var showCodeDialog by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
@@ -100,7 +90,7 @@ fun LobbyScreen(
         }
     }
 
-    var selectedGameMode by remember { mutableStateOf<GameMode?>(null) }
+
 
     Box(
         modifier = Modifier
@@ -114,17 +104,14 @@ fun LobbyScreen(
         ) {
             UserList(users.value)
             DescriptionBox(selectedGameMode)
-            LazyColumn(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .weight(0.4f)
+
+            Box(
+                modifier = Modifier.weight(0.4f)
             ) {
-                items(gameModes) { mode ->
-                    GameModeCard(mode, selectedGameMode) {
-                        selectedGameMode = mode
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                GamesList(
+                    selectedGameMode = selectedGameMode,
+                    onGameModeSelected = onGameModeSelected
+                )
             }
 
             Row(
@@ -374,68 +361,8 @@ fun UserList(users: List<UserData>) {
 }
 
 
-@Composable
-fun GameModeCard(mode: GameMode, selectedGameMode: GameMode?, onClick: () -> Unit) {
-    val isSelected = mode == selectedGameMode
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(150.dp)
-            .background(if (isSelected) primaryDark else secondaryDark)
-            .padding(8.dp),
-        shape = RoundedCornerShape(8.dp),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(primaryDark, CircleShape)
-                    .border(2.dp, onPrimaryDark, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = mode.title.take(1),
-                    style = AppTypography.bodySmall.copy(color = Color.White)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(start = 8.dp),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = mode.title,
-                    style = AppTypography.bodyLarge.copy(fontSize = 18.sp),
-                    textAlign = TextAlign.Start
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = mode.description,
-                    style = AppTypography.bodySmall.copy(fontSize = 14.sp),
-                    textAlign = TextAlign.Start
-                )
-            }
-        }
-    }
-}
 
 
-data class GameMode(
-    val title: String,
-    val description: String,
-    val route: String
-)
 
 data class Lobby(
     val id: String = "",
