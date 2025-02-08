@@ -42,12 +42,13 @@ import androidx.navigation.NavController
 import com.dadm.artisticall.R
 import com.dadm.artisticall.ui.theme.backgroundDark
 import com.dadm.artisticall.ui.theme.secondaryDark
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 
 @Composable
 fun LoginScreen(
-    navController: NavController
+    navController: NavController,
 ){
     val context = LocalContext.current
     val googleSignInClient = remember { GoogleSignInClient(context) }
@@ -93,6 +94,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .padding(16.dp)
                             .align(Alignment.Center)
+
                     )
                 }
                 VerticalDivider(color = Color.Gray, modifier = Modifier.height(48.dp))
@@ -102,8 +104,10 @@ fun LoginScreen(
                         .clickable {
                             lifecycleOwner.lifecycleScope.launch {
                                 isSignedIn = googleSignInClient.signIn()
+                                val lobbyCode = generateRandomCode()
+                                val userAuth =  FirebaseAuth.getInstance().currentUser?.displayName
                                 if (isSignedIn) {
-                                    navController.navigate("lobby_screen")
+                                    navController.navigate("lobby_screen/${lobbyCode}/${userAuth}")
                                 }
                             }
                         }
@@ -151,8 +155,9 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
+                    val lobbyCode = generateRandomCode()
                     if (username.text.isNotEmpty()) {
-                        navController.navigate("lobby_screen")
+                        navController.navigate("lobby_screen/${lobbyCode}/${username.text}")
                     } else {
                         Toast.makeText(context, "Por favor, ingresa un nickname", Toast.LENGTH_SHORT).show()
                     }
@@ -167,4 +172,9 @@ fun LoginScreen(
             }
         }
     }
+}
+
+
+fun generateRandomCode(): String {
+    return (100000..999999).random().toString()
 }

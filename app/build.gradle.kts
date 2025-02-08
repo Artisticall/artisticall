@@ -70,6 +70,9 @@ dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.androidx.foundation.android)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.lifecycle.process)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -105,5 +108,8 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
 
     implementation("com.google.code.gson:gson:2.8.8")
+
+    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
 
 }

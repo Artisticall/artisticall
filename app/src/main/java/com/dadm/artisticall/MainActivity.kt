@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,6 +25,7 @@ import com.dadm.artisticall.gamemodes.GuessScreen
 import com.dadm.artisticall.lobby.PointsScreen
 import com.dadm.artisticall.login.LoginScreen
 import com.dadm.artisticall.ui.theme.ArtisticallTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,9 +43,14 @@ class MainActivity : ComponentActivity() {
                                 navController = navController
                             )
                         }
-                        composable("lobby_screen") {
+                        composable("lobby_screen/{lobbyCode}/{username}") { backStackEntry ->
+                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                            val username = backStackEntry.arguments?.getString("username")
                             LobbyScreen(
-                                navController = navController
+                                navController = navController,
+                                lobbyCode = lobbyCode,
+                                username = username
+
                             )
                         }
                         composable("game_normal_screen") {
@@ -51,7 +58,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("guess_screen/{filePath}") { backStackEntry ->
                             val filePath = backStackEntry.arguments?.getString("filePath") ?: ""
-                            GuessScreen(filePath, navController) // Pasar la ruta del archivo a GuessScreen
+                            GuessScreen(filePath, navController)
                         }
                         composable("points_screen") {
                             PointsScreen(navController)

@@ -1,5 +1,9 @@
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -12,31 +16,45 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.dadm.artisticall.ui.theme.surfaceDark
 import com.dadm.artisticall.ui.theme.AppTypography
 import com.dadm.artisticall.ui.theme.backgroundDark
 import com.dadm.artisticall.ui.theme.onPrimaryDark
 import com.dadm.artisticall.ui.theme.primaryDark
 import com.dadm.artisticall.ui.theme.secondaryDark
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 
 @Composable
 fun LobbyScreen(
-    navController: NavController
+    navController: NavController,
+    lobbyCode: String?,
+    username: String?
 ) {
+
+
     val clipboardManager = LocalContext.current.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val users = listOf("Paula", "Juan Manuel", "Camargod", "Julián", "Felipe", "Jorge")
+    val users = remember { mutableStateOf(listOf<UserData>()) }
+    val maxPlayers = 8
     val gameModes = listOf(
         GameMode("Normal", "Juego clásico", "game_normal_screen"),
         GameMode("Solo", "Juega en solitario", "game_solo_screen"),
@@ -51,9 +69,38 @@ fun LobbyScreen(
         GameMode("Modo Desafío", "Desafíos rápidos para ganar puntos", "game_desafio_screen")
     )
 
-    var selectedGameMode by remember { mutableStateOf<GameMode?>(null) } // Estado para el juego seleccionado
-    var showPopup by remember { mutableStateOf(false) } // Estado para mostrar el popup
-    var roomCode by remember { mutableStateOf("") } // Estado para el código de la sala
+    var showCodeDialog by remember { mutableStateOf(false) }
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            errorMessage = null
+        }
+    }
+
+    BackHandler {
+        showExitDialog = true
+    }
+
+    var lobbyCreated by remember { mutableStateOf(false) }
+    var joinCode by remember { mutableStateOf("") }
+
+    LaunchedEffect(true) {
+        if (username != null) {
+            if (lobbyCode != null) {
+                createLobby(username, lobbyCode)
+                fetchUsers(lobbyCode) { fetchedPlayers ->
+                    users.value = fetchedPlayers
+                }
+            }
+        }
+    }
+
+    var selectedGameMode by remember { mutableStateOf<GameMode?>(null) }
 
     Box(
         modifier = Modifier
@@ -65,7 +112,7 @@ fun LobbyScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            UserList(users)
+            UserList(users.value)
             DescriptionBox(selectedGameMode)
             LazyColumn(
                 modifier = Modifier
@@ -88,7 +135,7 @@ fun LobbyScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    onClick = { showPopup = true },
+                    onClick = { showCodeDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -97,7 +144,10 @@ fun LobbyScreen(
                         containerColor = primaryDark
                     )
                 ) {
-                    Text("¿Cómo Unirme?", style = AppTypography.bodyMedium.copy(color = Color.White))
+                    Text(
+                        "¿Cómo unirme?",
+                        style = AppTypography.bodyMedium.copy(color = Color.White)
+                    )
                 }
                 Button(
                     onClick = {
@@ -114,28 +164,129 @@ fun LobbyScreen(
                     ),
                     enabled = selectedGameMode != null
                 ) {
-                    Text("Iniciar Juego", style = AppTypography.bodyMedium.copy(color = Color.White))
+                    Text(
+                        "Iniciar Juego",
+                        style = AppTypography.bodyMedium.copy(color = Color.White)
+                    )
                 }
             }
         }
+    }
 
-        if (showPopup) {
-            CodeInputPopup(
-                onDismiss = { showPopup = false },
-                onCopy = {
-                    copyToClipboard(roomCode, clipboardManager)
-                    showPopup = false
-                },
-                onJoin = {
-                    //TODO: Handle Join Lobbies
-                    showPopup = false
-                },
-                roomCode = roomCode,
-                onRoomCodeChange = { roomCode = it }
-            )
-        }
+    if (showCodeDialog) {
+        AlertDialog(
+            onDismissRequest = { showCodeDialog = false },
+            title = { Text("¿Cómo Unirme?") },
+            text = {
+                Column {
+                    Text("Código actual: $lobbyCode", style = AppTypography.bodyMedium)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Escribe un código para unirte a otra sala", style = AppTypography.bodySmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = joinCode,
+                        onValueChange = { joinCode = it },
+                        label = { Text("Ingresa un código") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Row {
+                    Button(
+                        onClick = {
+                            if (joinCode.isNotBlank()) {
+                                joinGame(joinCode, username ?: "Desconocido", {
+                                    Log.d("LobbyScreen", "Unido con éxito al lobby.")
+                                    showCodeDialog = false
+                                    navController.navigate("lobby_screen/${lobbyCode}/${username}")
+                                }, { message ->
+                                    errorMessage = message
+                                },
+                                    users = users
+                                )
+                            }
+                            showCodeDialog = false
+                        }
+                    ) {
+                        Text("Unirse")
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            lobbyCode?.let { copyToClipboard(it, clipboardManager) }
+                        }
+                    ) {
+                        Text("Copiar código")
+                    }
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showCodeDialog = false }
+                ) {
+                    Text("Cerrar")
+                }
+            }
+        )
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("¿Salir de la aplicación?") },
+            text = { Text("¿Estás seguro de que deseas cerrar sesión y salir?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        FirebaseAuth.getInstance().signOut()
+                        navController.navigate("login_screen")
+                        showExitDialog = false
+                    }
+                ) {
+                    Text("Sí")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showExitDialog = false
+                    }
+                ) {
+                    Text("No")
+                }
+            }
+        )
     }
 }
+
+data class UserData(
+    val username: String = "",
+    val imageUrl: String? = null
+)
+
+fun fetchUsers(lobbyCode: String, onUsersFetched: (List<UserData>) -> Unit) {
+    Firebase.firestore.collection("lobbies")
+        .document(lobbyCode)
+        .addSnapshotListener { document, e ->
+            if (e != null) {
+                Log.e("LobbyScreen", "Error al obtener los jugadores: ${e.message}")
+                return@addSnapshotListener
+            }
+
+            if (document != null && document.exists()) {
+                val lobby = document.toObject(Lobby::class.java)
+                val players = lobby?.players.orEmpty()
+                Log.d("LobbyScreen", "Jugadores del lobby: $players")
+                onUsersFetched(players)
+            } else {
+                Log.e("LobbyScreen", "Lobby no encontrado")
+            }
+        }
+}
+
+
 
 @Composable
 fun DescriptionBox(selectedGameMode: GameMode?) {
@@ -162,33 +313,66 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
 
 
 @Composable
-fun UserList(users: List<String>) {
+fun UserList(users: List<UserData>) {
+    val hasUsers = users.isNotEmpty()
+
     LazyRow(modifier = Modifier.padding(16.dp)) {
-        items(users) { user ->
-            Column(
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .width(80.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        if (!hasUsers) {
+            item {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(primaryDark, CircleShape)
-                        .border(2.dp, onPrimaryDark, CircleShape)
+                        .size(80.dp)
+                        .padding(16.dp), contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = user.take(1),
-                        modifier = Modifier.align(Alignment.Center),
-                        style = AppTypography.bodySmall.copy(color = Color.White)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(40.dp),
+                        color = primaryDark,
+                        strokeWidth = 4.dp
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(user, style = AppTypography.bodyLarge.copy(color = Color.White), maxLines = 1)
+            }
+        } else {
+            items(users) { user ->
+                Column(
+                    modifier = Modifier
+                        .padding(end = 16.dp)
+                        .width(80.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(primaryDark, CircleShape)
+                            .border(2.dp, onPrimaryDark, CircleShape)
+                    ) {
+                        user.imageUrl?.let {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(it)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "User Profile Image",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } ?: run {
+                            Text(
+                                text = user.username.take(1),
+                                modifier = Modifier.align(Alignment.Center),
+                                style = AppTypography.bodySmall.copy(color = Color.White)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(user.username, style = AppTypography.bodyLarge.copy(color = Color.White), maxLines = 1)
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun GameModeCard(mode: GameMode, selectedGameMode: GameMode?, onClick: () -> Unit) {
@@ -253,46 +437,81 @@ data class GameMode(
     val route: String
 )
 
-@Composable
-fun CodeInputPopup(
-    onDismiss: () -> Unit,
-    onCopy: () -> Unit,
-    onJoin: () -> Unit,
-    roomCode: String,
-    onRoomCodeChange: (String) -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("¿Cómo Unirme?") },
-        text = {
-            Column {
-                Text("Ingresa un código de 6 dígitos")
-                TextField(
-                    value = roomCode,
-                    onValueChange = { onRoomCodeChange(it) },
-                    label = { Text("Código de Sala") },
-                    maxLines = 1,
-                    isError = roomCode.length != 6
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onCopy,
-                enabled = roomCode.length == 6
-            ) {
-                Text("Copiar Código")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onJoin) {
-                Text("Unirme a una sala")
-            }
-        }
+data class Lobby(
+    val id: String = "",
+    val gameMode: String = "",
+    val players: List<UserData> = emptyList(),
+    val code: String = ""
+)
+
+fun createLobby(username: String, lobbyCode: String){
+    val user = FirebaseAuth.getInstance().currentUser
+    val imageUrl = user?.photoUrl?.toString()
+    val userData = UserData(username = username, imageUrl = imageUrl)
+
+    val lobby = Lobby(
+        id = lobbyCode,
+        gameMode = "",
+        players = listOf(userData),
+        code = lobbyCode
     )
+    Firebase.firestore.collection("lobbies")
+        .document(lobbyCode)
+        .set(lobby)
+        .addOnSuccessListener {
+            Log.d("Lobby", "Lobby created successfully!")
+        }
+        .addOnFailureListener { e ->
+            Log.e("Lobby", "Lobby failed creating at: ${e.message}")
+        }
 }
 
-fun copyToClipboard(roomCode: String, clipboardManager: ClipboardManager) {
-    val clip = android.content.ClipData.newPlainText("Room Code", roomCode)
+fun copyToClipboard(lobbyCode: String, clipboardManager: ClipboardManager) {
+    val clip = ClipData.newPlainText("Room Code", lobbyCode)
     clipboardManager.setPrimaryClip(clip)
+}
+
+fun joinGame(
+    lobbyCode: String,
+    username: String,
+    onSuccess: () -> Unit,
+    onFailure: (String) -> Unit,
+    users: MutableState<List<UserData>>
+) {
+    Firebase.firestore.collection("lobbies")
+        .document(lobbyCode)
+        .get()
+        .addOnSuccessListener { document ->
+            if (document.exists()) {
+                val lobby = document.toObject(Lobby::class.java)
+
+                if (lobby?.players?.size ?: 0 >= 8) {
+                    onFailure("El lobby está lleno. No puedes unirte.")
+                } else {
+                    val newUser = UserData(username = username)
+                    val updatedPlayers = lobby?.players.orEmpty() + newUser
+
+                    Firebase.firestore.collection("lobbies")
+                        .document(lobbyCode)
+                        .update("players", updatedPlayers)
+                        .addOnSuccessListener {
+                            Log.d("LobbyScreen", "Jugador agregado con éxito al lobby.")
+                            fetchUsers(lobbyCode) { fetchedPlayers ->
+                                users.value = fetchedPlayers
+                            }
+                            onSuccess()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("LobbyScreen", "Error al agregar jugador al lobby: ${e.message}")
+                            onFailure("Hubo un error al unirte al lobby.")
+                        }
+                }
+            } else {
+                onFailure("No se encontró el lobby con el código: $lobbyCode")
+            }
+        }
+        .addOnFailureListener { e ->
+            Log.e("LobbyScreen", "Error obteniendo el lobby: ${e.message}")
+            onFailure("Hubo un error al verificar el código.")
+        }
 }
