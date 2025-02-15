@@ -2,6 +2,7 @@ package com.dadm.artisticall.lobby
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,12 +29,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.dadm.artisticall.ui.theme.AppTypography
 import com.dadm.artisticall.ui.theme.onPrimaryDark
+import com.dadm.artisticall.ui.theme.primaryContainerDark
 import com.dadm.artisticall.ui.theme.primaryDark
 import com.dadm.artisticall.ui.theme.secondaryDark
 
@@ -47,57 +57,57 @@ fun GamesList(
             "Normal",
             "Juego clásico",
             "game_normal_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/3964/3964965.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Solo",
             "Juega en solitario",
             "game_solo_screen",
-            "")        ,
+            "https://cdn-icons-png.freepik.com/512/2491/2491519.png?ga=GA1.1.1882402121.1739594082")        ,
         GameMode(
             "Adivina la Palabra",
             "Adivina la palabra oculta",
             "game_adivina_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/17059/17059832.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "¿Qué es esto?",
             "Intenta adivinar el objeto a partir de pistas",
             "game_que_es_esto_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/5579/5579510.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Batalla de Pinceles",
             "Compite dibujando",
             "game_batalla_pinceles_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/1313/1313485.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Ponle Título",
             "Ponle título a una imagen",
             "game_ponle_titulo_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/16606/16606642.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Érase una vez",
             "Crea historias de manera colaborativa",
             "game_erase_una_vez_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/8013/8013787.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Modo Libre",
             "Dibuja lo que quieras",
             "game_libre_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/12141/12141689.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Ojo de Águila",
             "Adivina el objeto a partir de un pequeño detalle",
             "game_ojo_de_aguila_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/983/983890.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Modo Colaborativo",
             "Trabaja en equipo para lograr un objetivo",
             "game_colaborativo_screen",
-            ""),
+            "https://cdn-icons-png.freepik.com/512/11399/11399186.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Modo Desafío",
             "Desafíos rápidos para ganar puntos",
             "game_desafio_screen",
-            "")
+            "https://cdn-icons-png.freepik.com/512/12476/12476761.png?ga=GA1.1.1882402121.1739594082")
     )
 
     LazyColumn(
@@ -121,47 +131,64 @@ fun GameModeCard(mode: GameMode, selectedGameMode: GameMode?, onClick: () -> Uni
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
-            .background(if (isSelected) primaryDark else secondaryDark)
-            .padding(8.dp),
-        shape = RoundedCornerShape(8.dp),
-        onClick = onClick
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp))
+            .background(
+                color = if (isSelected) primaryDark else secondaryDark,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 2.dp,
+                color = if (isSelected) primaryDark else Color.Transparent,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) primaryContainerDark else primaryDark,
+        ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Box(
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(mode.iconUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Game Icon",
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(64.dp)
+                    .clip(CircleShape)
                     .background(primaryDark, CircleShape)
-                    .border(2.dp, onPrimaryDark, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = mode.title.take(1),
-                    style = AppTypography.bodySmall.copy(color = Color.White)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
+                    .padding(8.dp),
+                contentScale = ContentScale.Crop
+            )
 
             Column(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(start = 8.dp),
+                    .weight(1f)
+                    .fillMaxHeight(),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = mode.title,
-                    style = AppTypography.bodyLarge.copy(fontSize = 18.sp),
+                    style = AppTypography.bodyLarge.copy(
+                        fontSize = 20.sp,
+                        color = if (isSelected) Color.White else onPrimaryDark
+                    ),
                     textAlign = TextAlign.Start
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = mode.description,
-                    style = AppTypography.bodySmall.copy(fontSize = 14.sp),
+                    style = AppTypography.bodySmall.copy(
+                        fontSize = 14.sp,
+                        color = if (isSelected) Color.White.copy(alpha = 0.8f) else onPrimaryDark.copy(alpha = 0.8f)
+                    ),
                     textAlign = TextAlign.Start
                 )
             }

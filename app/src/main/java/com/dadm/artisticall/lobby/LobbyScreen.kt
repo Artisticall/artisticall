@@ -41,8 +41,12 @@ import com.dadm.artisticall.ui.theme.surfaceDark
 import com.dadm.artisticall.ui.theme.AppTypography
 import com.dadm.artisticall.ui.theme.backgroundDark
 import com.dadm.artisticall.ui.theme.onPrimaryDark
+import com.dadm.artisticall.ui.theme.onPrimaryLight
+import com.dadm.artisticall.ui.theme.onSecondaryDark
+import com.dadm.artisticall.ui.theme.onTertiaryDark
 import com.dadm.artisticall.ui.theme.primaryDark
 import com.dadm.artisticall.ui.theme.secondaryDark
+import com.dadm.artisticall.ui.theme.tertiaryDark
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -276,12 +280,12 @@ fun LobbyActions(
                 .weight(1f)
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = primaryDark
+                containerColor = tertiaryDark
             )
         ) {
             Text(
                 "¿Cómo unirme?",
-                style = AppTypography.bodyMedium.copy(color = Color.White)
+                style = AppTypography.bodyMedium.copy(color = onTertiaryDark)
             )
         }
         Button(
@@ -295,13 +299,15 @@ fun LobbyActions(
                 .height(50.dp)
                 .weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = secondaryDark
+                containerColor = secondaryDark,
+                disabledContainerColor = secondaryDark.copy(alpha = 0.3f),
+                disabledContentColor = onSecondaryDark.copy(alpha = 0.3f),
             ),
             enabled = selectedGameMode != null
         ) {
             Text(
                 "Iniciar Juego",
-                style = AppTypography.bodyMedium.copy(color = Color.White)
+                style = AppTypography.bodyMedium.copy(color = onSecondaryDark)
             )
         }
     }
@@ -366,9 +372,10 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(surfaceDark, RoundedCornerShape(8.dp))
+                    .background(onPrimaryLight, RoundedCornerShape(8.dp))
                     .shadow(8.dp, RoundedCornerShape(8.dp))
                     .padding(16.dp)
+                    .height(130.dp)
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -386,7 +393,7 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
 
                 Text(
                     text = gameMode.title,
-                    style = AppTypography.bodyMedium.copy(fontSize = 20.sp, color = Color.White),
+                    style = AppTypography.bodyMedium.copy(fontSize = 20.sp, color = onPrimaryDark),
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
@@ -394,7 +401,7 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
 
                 Text(
                     text = gameMode.description,
-                    style = AppTypography.bodySmall.copy(color = Color.White),
+                    style = AppTypography.bodySmall.copy(color = onPrimaryDark),
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     textAlign = TextAlign.Center
                 )
@@ -413,6 +420,8 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
 @Composable
 fun UserList(users: List<UserData>) {
     val hasUsers = users.isNotEmpty()
+
+    val defaultImageUrl = "https://avatar.iran.liara.run/public"
 
     LazyRow(modifier = Modifier.padding(16.dp)) {
         if (!hasUsers) {
@@ -443,25 +452,18 @@ fun UserList(users: List<UserData>) {
                             .background(primaryDark, CircleShape)
                             .border(2.dp, onPrimaryDark, CircleShape)
                     ) {
-                        user.imageUrl?.let {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(it)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = "User Profile Image",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.Crop
-                            )
-                        } ?: run {
-                            Text(
-                                text = user.username.take(1),
-                                modifier = Modifier.align(Alignment.Center),
-                                style = AppTypography.bodySmall.copy(color = Color.White)
-                            )
-                        }
+                        val imageUrl = user.imageUrl ?: defaultImageUrl
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(imageUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "User Profile Image",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(user.username, style = AppTypography.bodyLarge.copy(color = Color.White), maxLines = 1)
