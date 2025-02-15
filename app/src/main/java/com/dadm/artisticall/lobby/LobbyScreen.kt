@@ -7,7 +7,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -15,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -30,6 +28,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -44,6 +45,7 @@ import com.dadm.artisticall.ui.theme.primaryDark
 import com.dadm.artisticall.ui.theme.secondaryDark
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 
 @Composable
@@ -57,14 +59,42 @@ fun LobbyScreen(
 
     val clipboardManager = LocalContext.current.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val users = remember { mutableStateOf(listOf<UserData>()) }
-    val maxPlayers = 8
-
     var showCodeDialog by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
-
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
     val context = LocalContext.current
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val auth = FirebaseAuth.getInstance()
+    val firestore = FirebaseFirestore.getInstance()
+
+    //To test the app without deleting lobbies comment/uncomment this block of code
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP || event == Lifecycle.Event.ON_DESTROY) {
+                auth.signOut()
+                lobbyCode?.let { code ->
+                    firestore.collection("lobbies")
+                        .document(code)
+                        .delete()
+                        .addOnSuccessListener {
+                            Log.d("LobbyScreen", "Lobby eliminado: $code")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("LobbyScreen", "Error al eliminar el lobby: ${e.message}")
+                        }
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -76,7 +106,6 @@ fun LobbyScreen(
         showExitDialog = true
     }
 
-    var lobbyCreated by remember { mutableStateOf(false) }
     var joinCode by remember { mutableStateOf("") }
 
     LaunchedEffect(true) {
@@ -123,49 +152,15 @@ fun LobbyScreen(
                 )
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = { showCodeDialog = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = primaryDark
-                    )
-                ) {
-                    Text(
-                        "¿Cómo unirme?",
-                        style = AppTypography.bodyMedium.copy(color = Color.White)
-                    )
-                }
-                Button(
-                    onClick = {
-                        selectedGameMode?.let {
-                            navController.navigate(it.route)
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = secondaryDark
-                    ),
-                    enabled = selectedGameMode != null
-                ) {
-                    Text(
-                        "Iniciar Juego",
-                        style = AppTypography.bodyMedium.copy(color = Color.White)
-                    )
-                }
-            }
+            LobbyActions(
+                showCodeDialog = showCodeDialog,
+                onShowCodeDialogChange = { showCodeDialog = it },
+                lobbyCode = lobbyCode,
+                selectedGameMode = selectedGameMode,
+                onGameModeSelected = onGameModeSelected,
+                navController = navController,
+                clipboardManager = clipboardManager
+            )
         }
     }
 
@@ -231,7 +226,7 @@ fun LobbyScreen(
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
-            title = { Text("¿Salir de la aplicación?") },
+            title = { Text("¿Ir al Inicio?") },
             text = { Text("¿Estás seguro de que deseas cerrar sesión y salir?") },
             confirmButton = {
                 Button(
@@ -254,6 +249,61 @@ fun LobbyScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+fun LobbyActions(
+    showCodeDialog: Boolean,
+    onShowCodeDialogChange: (Boolean) -> Unit,
+    lobbyCode: String?,
+    selectedGameMode: GameMode?,
+    onGameModeSelected: (GameMode?) -> Unit,
+    navController: NavController,
+    clipboardManager: ClipboardManager
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = { onShowCodeDialogChange(true) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = primaryDark
+            )
+        ) {
+            Text(
+                "¿Cómo unirme?",
+                style = AppTypography.bodyMedium.copy(color = Color.White)
+            )
+        }
+        Button(
+            onClick = {
+                selectedGameMode?.let {
+                    navController.navigate(it.route)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = secondaryDark
+            ),
+            enabled = selectedGameMode != null
+        ) {
+            Text(
+                "Iniciar Juego",
+                style = AppTypography.bodyMedium.copy(color = Color.White)
+            )
+        }
     }
 }
 
@@ -310,19 +360,51 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .background(surfaceDark, RoundedCornerShape(8.dp))
-            .shadow(8.dp, RoundedCornerShape(8.dp))
-            .padding(16.dp)
             .height(150.dp)
     ) {
-        selectedGameMode?.let {
-            Column {
-                Text(it.title, style = AppTypography.bodyMedium.copy(fontSize = 18.sp).copy(color = Color.White))
+        selectedGameMode?.let { gameMode ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(surfaceDark, RoundedCornerShape(8.dp))
+                    .shadow(8.dp, RoundedCornerShape(8.dp))
+                    .padding(16.dp)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(gameMode.iconUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Game Icon",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .align(Alignment.CenterHorizontally),
+                    contentScale = ContentScale.Crop
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(it.description, style = AppTypography.bodySmall.copy(color = Color.White))
+
+                Text(
+                    text = gameMode.title,
+                    style = AppTypography.bodyMedium.copy(fontSize = 20.sp, color = Color.White),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = gameMode.description,
+                    style = AppTypography.bodySmall.copy(color = Color.White),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    textAlign = TextAlign.Center
+                )
             }
         } ?: run {
-            Text("Selecciona un juego para ver su descripción", style = AppTypography.bodySmall.copy(color = Color.White))
+            Text(
+                text = "Selecciona un juego para ver su descripción",
+                style = AppTypography.bodySmall.copy(color = Color.White),
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
     }
 }

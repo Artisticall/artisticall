@@ -43,17 +43,61 @@ fun GamesList(
 ) {
 
     val gameModes = listOf(
-        GameMode("Normal", "Juego clásico", "game_normal_screen"),
-        GameMode("Solo", "Juega en solitario", "game_solo_screen"),
-        GameMode("Adivina la Palabra", "Adivina la palabra oculta", "game_adivina_screen"),
-        GameMode("¿Qué es esto?", "Intenta adivinar el objeto a partir de pistas", "game_que_es_esto_screen"),
-        GameMode("Batalla de Pinceles", "Compite dibujando", "game_batalla_pinceles_screen"),
-        GameMode("Ponle Título", "Ponle título a una imagen", "game_ponle_titulo_screen"),
-        GameMode("Érase una vez", "Crea historias de manera colaborativa", "game_erase_una_vez_screen"),
-        GameMode("Modo Libre", "Dibuja lo que quieras", "game_libre_screen"),
-        GameMode("Ojo de Águila", "Adivina el objeto a partir de un pequeño detalle", "game_ojo_de_aguila_screen"),
-        GameMode("Modo Colaborativo", "Trabaja en equipo para lograr un objetivo", "game_colaborativo_screen"),
-        GameMode("Modo Desafío", "Desafíos rápidos para ganar puntos", "game_desafio_screen")
+        GameMode(
+            "Normal",
+            "Juego clásico",
+            "game_normal_screen",
+            ""),
+        GameMode(
+            "Solo",
+            "Juega en solitario",
+            "game_solo_screen",
+            "")        ,
+        GameMode(
+            "Adivina la Palabra",
+            "Adivina la palabra oculta",
+            "game_adivina_screen",
+            ""),
+        GameMode(
+            "¿Qué es esto?",
+            "Intenta adivinar el objeto a partir de pistas",
+            "game_que_es_esto_screen",
+            ""),
+        GameMode(
+            "Batalla de Pinceles",
+            "Compite dibujando",
+            "game_batalla_pinceles_screen",
+            ""),
+        GameMode(
+            "Ponle Título",
+            "Ponle título a una imagen",
+            "game_ponle_titulo_screen",
+            ""),
+        GameMode(
+            "Érase una vez",
+            "Crea historias de manera colaborativa",
+            "game_erase_una_vez_screen",
+            ""),
+        GameMode(
+            "Modo Libre",
+            "Dibuja lo que quieras",
+            "game_libre_screen",
+            ""),
+        GameMode(
+            "Ojo de Águila",
+            "Adivina el objeto a partir de un pequeño detalle",
+            "game_ojo_de_aguila_screen",
+            ""),
+        GameMode(
+            "Modo Colaborativo",
+            "Trabaja en equipo para lograr un objetivo",
+            "game_colaborativo_screen",
+            ""),
+        GameMode(
+            "Modo Desafío",
+            "Desafíos rápidos para ganar puntos",
+            "game_desafio_screen",
+            "")
     )
 
     LazyColumn(
@@ -128,5 +172,6 @@ fun GameModeCard(mode: GameMode, selectedGameMode: GameMode?, onClick: () -> Uni
 data class GameMode(
     val title: String,
     val description: String,
-    val route: String
+    val route: String,
+    val iconUrl: String
 )
