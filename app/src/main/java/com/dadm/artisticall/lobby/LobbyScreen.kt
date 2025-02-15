@@ -37,7 +37,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.dadm.artisticall.lobby.GameMode
 import com.dadm.artisticall.lobby.GamesList
-import com.dadm.artisticall.ui.theme.surfaceDark
 import com.dadm.artisticall.ui.theme.AppTypography
 import com.dadm.artisticall.ui.theme.backgroundDark
 import com.dadm.artisticall.ui.theme.onPrimaryDark
@@ -49,7 +48,6 @@ import com.dadm.artisticall.ui.theme.secondaryDark
 import com.dadm.artisticall.ui.theme.tertiaryDark
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 
 @Composable
@@ -61,7 +59,8 @@ fun LobbyScreen(
     onGameModeSelected: (GameMode?) -> Unit
 ) {
 
-    val clipboardManager = LocalContext.current.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipboardManager =
+        LocalContext.current.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val users = remember { mutableStateOf(listOf<UserData>()) }
     var showCodeDialog by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
@@ -70,24 +69,21 @@ fun LobbyScreen(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val auth = FirebaseAuth.getInstance()
-    val firestore = FirebaseFirestore.getInstance()
 
-    //To test the app without deleting lobbies comment/uncomment this block of code
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP || event == Lifecycle.Event.ON_DESTROY) {
-                auth.signOut()
-                lobbyCode?.let { code ->
-                    firestore.collection("lobbies")
-                        .document(code)
-                        .delete()
-                        .addOnSuccessListener {
-                            Log.d("LobbyScreen", "Lobby eliminado: $code")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("LobbyScreen", "Error al eliminar el lobby: ${e.message}")
-                        }
+            when (event) {
+                Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
+                    lobbyCode?.let { code ->
+                        leaveLobby(code, username ?: "Desconocido", {
+                            Log.d("LobbyScreen", "Usuario salió del lobby correctamente.")
+                        }, { message ->
+                            errorMessage = message
+                        })
+                    }
+                    auth.signOut()
                 }
+                else -> {}
             }
         }
 
@@ -104,10 +100,6 @@ fun LobbyScreen(
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             errorMessage = null
         }
-    }
-
-    BackHandler {
-        showExitDialog = true
     }
 
     var joinCode by remember { mutableStateOf("") }
@@ -176,7 +168,10 @@ fun LobbyScreen(
                 Column {
                     Text("Código actual: $lobbyCode", style = AppTypography.bodyMedium)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Escribe un código para unirte a otra sala", style = AppTypography.bodySmall)
+                    Text(
+                        "Escribe un código para unirte a otra sala",
+                        style = AppTypography.bodySmall
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = joinCode,
@@ -194,11 +189,16 @@ fun LobbyScreen(
                                 joinGame(joinCode, username ?: "Desconocido", {
                                     Log.d("LobbyScreen", "Unido con éxito al lobby.")
                                     showCodeDialog = false
-                                    navController.navigate("lobby_screen/${joinCode}/${username}")
+                                    navController.navigate("lobby_screen/${joinCode}/${username}") {
+                                        popUpTo("lobby_screen/${lobbyCode}/${username}") {
+                                            inclusive = true
+                                        }
+                                    }
                                 }, { message ->
                                     errorMessage = message
                                 },
-                                    users = users
+                                    users = users,
+                                    previousLobbyCode = lobbyCode
                                 )
                             }
                             showCodeDialog = false
@@ -227,6 +227,10 @@ fun LobbyScreen(
         )
     }
 
+    BackHandler {
+        showExitDialog = true
+    }
+
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
@@ -235,9 +239,17 @@ fun LobbyScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        FirebaseAuth.getInstance().signOut()
-                        navController.navigate("login_screen")
-                        showExitDialog = false
+                        lobbyCode?.let { code ->
+                            leaveLobby(code, username ?: "Desconocido", {
+                                FirebaseAuth.getInstance().signOut()
+                                navController.navigate("login_screen") {
+                                    popUpTo(0)
+                                }
+                                showExitDialog = false
+                            }, { message ->
+                                errorMessage = message
+                            })
+                        }
                     }
                 ) {
                     Text("Sí")
@@ -351,7 +363,20 @@ fun fetchUsers(lobbyCode: String, onUsersFetched: (List<UserData>) -> Unit) {
                 val lobby = document.toObject(Lobby::class.java)
                 val players = lobby?.players.orEmpty()
                 Log.d("LobbyScreen", "Jugadores del lobby: $players")
-                onUsersFetched(players)
+
+                if (players.isEmpty()) {
+                    Firebase.firestore.collection("lobbies")
+                        .document(lobbyCode)
+                        .delete()
+                        .addOnSuccessListener {
+                            Log.d("LobbyScreen", "Lobby eliminado porque no hay jugadores.")
+                        }
+                        .addOnFailureListener { ex ->
+                            Log.e("LobbyScreen", "Error al eliminar el lobby: ${ex.message}")
+                        }
+                } else {
+                    onUsersFetched(players)
+                }
             } else {
                 Log.e("LobbyScreen", "Lobby no encontrado")
             }
@@ -420,7 +445,6 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
 @Composable
 fun UserList(users: List<UserData>) {
     val hasUsers = users.isNotEmpty()
-
     val defaultImageUrl = "https://avatar.iran.liara.run/public"
 
     LazyRow(modifier = Modifier.padding(16.dp)) {
@@ -473,10 +497,6 @@ fun UserList(users: List<UserData>) {
     }
 }
 
-
-
-
-
 data class Lobby(
     val id: String = "",
     val gameMode: String = "",
@@ -516,34 +536,125 @@ fun joinGame(
     username: String,
     onSuccess: () -> Unit,
     onFailure: (String) -> Unit,
-    users: MutableState<List<UserData>>
+    users: MutableState<List<UserData>>,
+    previousLobbyCode: String?
 ) {
+    val user = FirebaseAuth.getInstance().currentUser
+    val imageUrl = user?.photoUrl?.toString()
+
+    previousLobbyCode?.let { code ->
+        leaveLobby(code, username, {
+            Firebase.firestore.collection("lobbies")
+                .document(lobbyCode)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val lobby = document.toObject(Lobby::class.java)
+
+                        if ((lobby?.players?.size ?: 0) >= 8) {
+                            onFailure("El lobby está lleno. No puedes unirte.")
+                        } else {
+                            val newUser = UserData(username = username, imageUrl = imageUrl)
+                            val updatedPlayers = lobby?.players.orEmpty() + newUser
+
+                            Firebase.firestore.collection("lobbies")
+                                .document(lobbyCode)
+                                .update("players", updatedPlayers)
+                                .addOnSuccessListener {
+                                    Log.d("LobbyScreen", "Jugador agregado con éxito al lobby.")
+                                    fetchUsers(lobbyCode) { fetchedPlayers ->
+                                        users.value = fetchedPlayers
+                                    }
+                                    onSuccess()
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.e("LobbyScreen", "Error al agregar jugador al lobby: ${e.message}")
+                                    onFailure("Hubo un error al unirte al lobby.")
+                                }
+                        }
+                    } else {
+                        onFailure("No se encontró el lobby con el código: $lobbyCode")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("LobbyScreen", "Error obteniendo el lobby: ${e.message}")
+                    onFailure("Hubo un error al verificar el código.")
+                }
+        }, { message ->
+            onFailure(message)
+        })
+    } ?: run {
+        Firebase.firestore.collection("lobbies")
+            .document(lobbyCode)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val lobby = document.toObject(Lobby::class.java)
+
+                    if ((lobby?.players?.size ?: 0) >= 8) {
+                        onFailure("El lobby está lleno. No puedes unirte.")
+                    } else {
+                        val newUser = UserData(username = username, imageUrl = imageUrl)
+                        val updatedPlayers = lobby?.players.orEmpty() + newUser
+
+                        Firebase.firestore.collection("lobbies")
+                            .document(lobbyCode)
+                            .update("players", updatedPlayers)
+                            .addOnSuccessListener {
+                                Log.d("LobbyScreen", "Jugador agregado con éxito al lobby.")
+                                fetchUsers(lobbyCode) { fetchedPlayers ->
+                                    users.value = fetchedPlayers
+                                }
+                                onSuccess()
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("LobbyScreen", "Error al agregar jugador al lobby: ${e.message}")
+                                onFailure("Hubo un error al unirte al lobby.")
+                            }
+                    }
+                } else {
+                    onFailure("No se encontró el lobby con el código: $lobbyCode")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("LobbyScreen", "Error obteniendo el lobby: ${e.message}")
+                onFailure("Hubo un error al verificar el código.")
+            }
+    }
+}
+
+fun leaveLobby(lobbyCode: String, username: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
     Firebase.firestore.collection("lobbies")
         .document(lobbyCode)
         .get()
         .addOnSuccessListener { document ->
             if (document.exists()) {
                 val lobby = document.toObject(Lobby::class.java)
+                val updatedPlayers = lobby?.players?.filter { it.username != username } ?: emptyList()
 
-                if (lobby?.players?.size ?: 0 >= 8) {
-                    onFailure("El lobby está lleno. No puedes unirte.")
+                if (updatedPlayers.isEmpty()) {
+                    Firebase.firestore.collection("lobbies")
+                        .document(lobbyCode)
+                        .delete()
+                        .addOnSuccessListener {
+                            Log.d("LobbyScreen", "Lobby eliminado porque no hay jugadores.")
+                            onSuccess()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("LobbyScreen", "Error al eliminar el lobby: ${e.message}")
+                            onFailure("Hubo un error al eliminar el lobby.")
+                        }
                 } else {
-                    val newUser = UserData(username = username)
-                    val updatedPlayers = lobby?.players.orEmpty() + newUser
-
                     Firebase.firestore.collection("lobbies")
                         .document(lobbyCode)
                         .update("players", updatedPlayers)
                         .addOnSuccessListener {
-                            Log.d("LobbyScreen", "Jugador agregado con éxito al lobby.")
-                            fetchUsers(lobbyCode) { fetchedPlayers ->
-                                users.value = fetchedPlayers
-                            }
+                            Log.d("LobbyScreen", "Jugador eliminado con éxito del lobby.")
                             onSuccess()
                         }
                         .addOnFailureListener { e ->
-                            Log.e("LobbyScreen", "Error al agregar jugador al lobby: ${e.message}")
-                            onFailure("Hubo un error al unirte al lobby.")
+                            Log.e("LobbyScreen", "Error al eliminar jugador del lobby: ${e.message}")
+                            onFailure("Hubo un error al abandonar el lobby.")
                         }
                 }
             } else {
