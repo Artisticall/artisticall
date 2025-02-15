@@ -82,13 +82,22 @@ fun LobbyScreen(
     LaunchedEffect(true) {
         if (username != null) {
             if (lobbyCode != null) {
-                createLobby(username, lobbyCode)
-                fetchUsers(lobbyCode) { fetchedPlayers ->
-                    users.value = fetchedPlayers
+                checkLobbyExists(lobbyCode) { exists ->
+                    if (!exists) {
+                        createLobby(username, lobbyCode)
+                        fetchUsers(lobbyCode) { fetchedPlayers ->
+                            users.value = fetchedPlayers
+                        }
+                    } else {
+                        fetchUsers(lobbyCode) { fetchedPlayers ->
+                            users.value = fetchedPlayers
+                        }
+                    }
                 }
             }
         }
     }
+
 
 
 
@@ -186,7 +195,7 @@ fun LobbyScreen(
                                 joinGame(joinCode, username ?: "Desconocido", {
                                     Log.d("LobbyScreen", "Unido con éxito al lobby.")
                                     showCodeDialog = false
-                                    navController.navigate("lobby_screen/${lobbyCode}/${username}")
+                                    navController.navigate("lobby_screen/${joinCode}/${username}")
                                 }, { message ->
                                     errorMessage = message
                                 },
@@ -247,6 +256,26 @@ fun LobbyScreen(
         )
     }
 }
+
+fun checkLobbyExists(lobbyCode: String, onResult: (Boolean) -> Unit) {
+    Firebase.firestore.collection("lobbies")
+        .document(lobbyCode)
+        .get()
+        .addOnSuccessListener { document ->
+            if (document.exists()) {
+                val lobby = document.toObject(Lobby::class.java)
+                val hasPlayers = lobby?.players?.isNotEmpty() == true
+                onResult(hasPlayers)
+            } else {
+                onResult(false)
+            }
+        }
+        .addOnFailureListener { e ->
+            Log.e("LobbyScreen", "Error al verificar si el lobby existe: ${e.message}")
+            onResult(false)
+        }
+}
+
 
 data class UserData(
     val username: String = "",
