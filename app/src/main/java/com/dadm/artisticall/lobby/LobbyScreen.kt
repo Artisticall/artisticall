@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -391,50 +392,64 @@ fun DescriptionBox(selectedGameMode: GameMode?) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .height(150.dp)
+            .height(200.dp)
     ) {
         selectedGameMode?.let { gameMode ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(onPrimaryLight, RoundedCornerShape(8.dp))
-                    .shadow(8.dp, RoundedCornerShape(8.dp))
-                    .padding(16.dp)
-                    .height(130.dp)
+                    .background(onPrimaryLight, RoundedCornerShape(16.dp))
+                    .shadow(12.dp, RoundedCornerShape(16.dp))
+                    .padding(24.dp)
+                    .height(180.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(gameMode.iconUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Game Icon",
-                    modifier = Modifier
-                        .size(48.dp)
-                        .align(Alignment.CenterHorizontally),
-                    contentScale = ContentScale.Crop
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(gameMode.iconUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Game Icon",
+                        modifier = Modifier
+                            .size(48.dp)
+                            .padding(end = 12.dp)
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = gameMode.title,
+                        style = AppTypography.bodyMedium.copy(
+                            fontSize = 20.sp,
+                            color = onPrimaryDark,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = gameMode.title,
-                    style = AppTypography.bodyMedium.copy(fontSize = 20.sp, color = onPrimaryDark),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = gameMode.description,
-                    style = AppTypography.bodySmall.copy(color = onPrimaryDark),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    textAlign = TextAlign.Center
+                    text = gameMode.descriptionLong,
+                    style = AppTypography.bodySmall.copy(
+                        color = onPrimaryDark,
+                        fontSize = 16.sp
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
         } ?: run {
             Text(
                 text = "Selecciona un juego para ver su descripción",
-                style = AppTypography.bodySmall.copy(color = Color.White),
+                style = AppTypography.bodySmall.copy(
+                    color = Color.White,
+                    fontSize = 18.sp
+                ),
                 modifier = Modifier.align(Alignment.Center)
             )
         }
