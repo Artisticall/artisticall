@@ -57,7 +57,7 @@ fun GamesList(
             "Normal",
             "Juego clásico",
             "Alterna entre escribir frases y dibujarlas. Descubre cómo evolucionan las ideas de todos en una secuencia divertida y colaborativa.",
-            "game_normal_screen",
+            "write_phrase_screen/{lobbyCode}/{username}",
             "https://cdn-icons-png.freepik.com/512/3964/3964965.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "Solo",

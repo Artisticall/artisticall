@@ -21,11 +21,13 @@ import com.dadm.artisticall.gamemodes.GameColaborativoScreen
 import com.dadm.artisticall.gamemodes.GameDesafioScreen
 import com.dadm.artisticall.gamemodes.GameEraseUnaVezScreen
 import com.dadm.artisticall.gamemodes.GameLibreScreen
+import com.dadm.artisticall.gamemodes.GameNormalScreen
 import com.dadm.artisticall.gamemodes.GameOjoDeAguilaScreen
 import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
 import com.dadm.artisticall.gamemodes.GameSoloScreen
 import com.dadm.artisticall.gamemodes.GuessScreen
+import com.dadm.artisticall.gamemodes.WritePhraseScreen
 import com.dadm.artisticall.lobby.GameMode
 import com.dadm.artisticall.lobby.PointsScreen
 import com.dadm.artisticall.login.LoginScreen
@@ -64,8 +66,17 @@ class MainActivity : ComponentActivity() {
                                 onGameModeSelected = onGameModeSelected
                             )
                         }
+                        composable("write_phrase_screen/{lobbyCode}/{username}") { backStackEntry ->
+                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                            val username = backStackEntry.arguments?.getString("username")
+                            WritePhraseScreen(
+                                navController = navController,
+                                lobbyCode = lobbyCode ?: "",
+                                username = username ?: ""
+                            )
+                        }
                         composable("game_normal_screen") {
-                            GameBatallaPincelesScreen(navController)
+                            GameNormalScreen(navController)
                         }
                         composable("guess_screen/{filePath}") { backStackEntry ->
                             val filePath = backStackEntry.arguments?.getString("filePath") ?: ""

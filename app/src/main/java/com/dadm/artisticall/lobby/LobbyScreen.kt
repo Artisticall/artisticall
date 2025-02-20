@@ -105,22 +105,45 @@ fun LobbyScreen(
 
     var joinCode by remember { mutableStateOf("") }
 
-    LaunchedEffect(true) {
-        if (username != null) {
-            if (lobbyCode != null) {
-                checkLobbyExists(lobbyCode) { exists ->
-                    if (!exists) {
-                        createLobby(username, lobbyCode)
-                        fetchUsers(lobbyCode) { fetchedPlayers ->
-                            users.value = fetchedPlayers
-                        }
-                    } else {
-                        fetchUsers(lobbyCode) { fetchedPlayers ->
-                            users.value = fetchedPlayers
+    LaunchedEffect(Unit) { // Usa Unit en lugar de true, es más limpio
+        if (!username.isNullOrEmpty() && !lobbyCode.isNullOrEmpty()) {
+
+            // Verifica si el lobby existe y obtiene los jugadores
+            checkLobbyExists(lobbyCode) { exists ->
+                if (!exists) {
+                    createLobby(username, lobbyCode)
+                }
+                fetchUsers(lobbyCode) { fetchedPlayers ->
+                    users.value = fetchedPlayers
+                }
+            }
+
+            // Escucha cambios en el lobby para redirigir a los jugadores
+            Firebase.firestore.collection("lobbies")
+                .document(lobbyCode)
+                .addSnapshotListener { document, error ->
+                    if (error != null) {
+                        Log.e("LobbyScreen", "Error al escuchar cambios: ${error.message}")
+                        return@addSnapshotListener
+                    }
+
+                    if (document != null && document.exists()) {
+                        val gameStarted = document.getBoolean("gameStarted") ?: false
+                        val gameModeRoute = document.getString("gameMode") ?: ""
+
+                        if (gameStarted && gameModeRoute.isNotEmpty()) {
+                            // Cada jugador usa su propio username para navegar
+                            val route = gameModeRoute
+                                .replace("{lobbyCode}", lobbyCode)
+                                .replace("{username}", username) // Usa el username del jugador actual
+
+                            // Solo navega si aún no está en esa pantalla (evita navegación múltiple)
+                            if (navController.currentDestination?.route != route) {
+                                navController.navigate(route)
+                            }
                         }
                     }
                 }
-            }
         }
     }
 
@@ -153,10 +176,12 @@ fun LobbyScreen(
                 showCodeDialog = showCodeDialog,
                 onShowCodeDialogChange = { showCodeDialog = it },
                 lobbyCode = lobbyCode,
+                username = username,
                 selectedGameMode = selectedGameMode,
                 onGameModeSelected = onGameModeSelected,
                 navController = navController,
-                clipboardManager = clipboardManager
+                clipboardManager = clipboardManager,
+                users = users.value
             )
         }
     }
@@ -274,10 +299,12 @@ fun LobbyActions(
     showCodeDialog: Boolean,
     onShowCodeDialogChange: (Boolean) -> Unit,
     lobbyCode: String?,
+    username: String?,
     selectedGameMode: GameMode?,
     onGameModeSelected: (GameMode?) -> Unit,
     navController: NavController,
-    clipboardManager: ClipboardManager
+    clipboardManager: ClipboardManager,
+    users: List<UserData>
 ) {
     Row(
         modifier = Modifier
@@ -303,8 +330,32 @@ fun LobbyActions(
         }
         Button(
             onClick = {
-                selectedGameMode?.let {
-                    navController.navigate(it.route)
+                selectedGameMode?.let { gameMode ->
+                    val route = gameMode.route
+                        .replace("{lobbyCode}", lobbyCode ?: "")
+
+                    // Guardar la lista de usernames en el documento del juego
+                    val usernames = users.map { it.username } // Usa la lista de usuarios
+                    Firebase.firestore.collection("games")
+                        .document(lobbyCode ?: "")
+                        .set(mapOf("usernames" to usernames))
+                        .addOnSuccessListener {
+                            Log.d("LobbyScreen", "Lista de usernames guardada en el documento del juego")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("LobbyScreen", "Error al guardar la lista de usernames: ${e.message}")
+                        }
+
+                    // Actualizar el estado del lobby (opcional, si quieres mantenerlo "vivo")
+                    Firebase.firestore.collection("lobbies")
+                        .document(lobbyCode ?: "")
+                        .update("gameStarted", true, "gameMode", route)
+                        .addOnSuccessListener {
+                            Log.d("LobbyScreen", "Juego iniciado por el host")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("LobbyScreen", "Error al iniciar el juego: ${e.message}")
+                        }
                 }
             },
             modifier = Modifier
