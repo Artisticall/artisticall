@@ -1,4 +1,4 @@
-package com.dadm.artisticall.gamemodes
+package com.dadm.artisticall.gamemodes.modoNormal
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

@@ -23,13 +23,13 @@ import com.dadm.artisticall.gamemodes.GameColaborativoScreen
 import com.dadm.artisticall.gamemodes.GameDesafioScreen
 import com.dadm.artisticall.gamemodes.GameEraseUnaVezScreen
 import com.dadm.artisticall.gamemodes.GameLibreScreen
-import com.dadm.artisticall.gamemodes.GameNormalScreen
+import com.dadm.artisticall.gamemodes.modoNormal.GameNormalScreen
 import com.dadm.artisticall.gamemodes.ojoDeAguila.GameOjoDeAguilaScreen
 import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
 import com.dadm.artisticall.gamemodes.GameSoloScreen
-import com.dadm.artisticall.gamemodes.GuessScreen
-import com.dadm.artisticall.gamemodes.WritePhraseScreen
+import com.dadm.artisticall.gamemodes.modoNormal.GuessScreen
+import com.dadm.artisticall.gamemodes.modoNormal.WritePhraseScreen
 import com.dadm.artisticall.gamemodes.ojoDeAguila.ResultsScreen
 import com.dadm.artisticall.lobby.GameMode
 import com.dadm.artisticall.lobby.PointsScreen

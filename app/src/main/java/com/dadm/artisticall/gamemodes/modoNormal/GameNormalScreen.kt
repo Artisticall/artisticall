@@ -1,7 +1,6 @@
-package com.dadm.artisticall.gamemodes
+package com.dadm.artisticall.gamemodes.modoNormal
 
 import android.graphics.Bitmap
-import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
