@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.dadm.artisticall.ui.theme.AppTypography
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.delay
 
@@ -24,7 +23,7 @@ fun WritePhraseScreen(
     username: String
 ) {
     var phrase by remember { mutableStateOf("") }
-    var remainingTime by remember { mutableStateOf(15) } // Cambiado a 15 segundos
+    var remainingTime by remember { mutableStateOf(15) } // Contador de 15 segundos
     val context = LocalContext.current
 
     // Efecto para manejar el contador
@@ -35,18 +34,18 @@ fun WritePhraseScreen(
         } else {
             // Guardar la frase automáticamente cuando el tiempo llegue a 0
             if (phrase.isNotBlank()) {
-                savePhrase(lobbyCode, username, phrase, {
+                savePhrase(lobbyCode, username, phrase, { phraseId ->
                     Toast.makeText(context, "Frase guardada automáticamente", Toast.LENGTH_SHORT).show()
                     // Redirige a la pantalla game_normal_screen después de guardar la frase
-                    navController.navigate("game_normal_screen")
+                    navController.navigate("game_normal_screen/$lobbyCode/$username")
                 }, { error ->
                     Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
                     // Redirige incluso si hay un error (opcional)
-                    navController.navigate("game_normal_screen")
+                    navController.navigate("game_normal_screen/$lobbyCode/$username")
                 })
             } else {
                 // Si no hay frase, redirige de todos modos
-                navController.navigate("game_normal_screen")
+                navController.navigate("game_normal_screen/$lobbyCode/$username")
             }
         }
     }
@@ -69,7 +68,7 @@ fun WritePhraseScreen(
         TextField(
             value = phrase,
             onValueChange = { phrase = it },
-            label = { Text("Escribe una frase") },
+            label = { Text("Escribe una frase para dibujar") },
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -79,7 +78,7 @@ fun savePhrase(
     lobbyCode: String,
     username: String,
     phrase: String,
-    onSuccess: () -> Unit,
+    onSuccess: (String) -> Unit, // Ahora recibe el ID de la frase
     onFailure: (String) -> Unit
 ) {
     // Crear el objeto con los datos de la frase
@@ -87,6 +86,7 @@ fun savePhrase(
         "text" to phrase,
         "authorIds" to listOf(username), // Guardar el username en lugar del userId
         "drawed" to false,
+        "assigned" to false, // Nuevo campo para marcar si la frase está asignada
         "lobbyCode" to lobbyCode
     )
 
@@ -95,8 +95,10 @@ fun savePhrase(
         .document(lobbyCode) // Acceder al documento del lobby
         .collection("phrases") // Acceder a la subcolección "phrases"
         .add(phraseData) // Añadir la frase
-        .addOnSuccessListener {
-            onSuccess()
+        .addOnSuccessListener { documentReference ->
+            // Obtener el ID de la frase recién creada
+            val phraseId = documentReference.id
+            onSuccess(phraseId) // Pasar el ID de la frase al callback
         }
         .addOnFailureListener { e ->
             onFailure(e.message ?: "Error desconocido")

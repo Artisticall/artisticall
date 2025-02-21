@@ -2,6 +2,7 @@ package com.dadm.artisticall.gamemodes
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -17,13 +18,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.dadm.artisticall.drawing.DrawingView
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import kotlinx.coroutines.delay
 
 @Composable
-fun GameNormalScreen(navController: NavController) {
+fun GameNormalScreen(
+    navController: NavController,
+    lobbyCode: String,
+    username: String
+) {
     val context = LocalContext.current
     val drawingView = remember { DrawingView(context) }
     val colors = listOf(
@@ -44,9 +52,23 @@ fun GameNormalScreen(navController: NavController) {
     var timeLeft by remember { mutableStateOf(50) }
     var isTimerRunning by remember { mutableStateOf(true) }
 
-    // Función para guardar la imagen
-    fun saveImage() {
-        val bitmap = drawingView.getBitmap()
+    // Estado para la frase seleccionada
+    var selectedPhrase by remember { mutableStateOf<Phrase?>(null) }
+
+    // Obtener una frase aleatoria cuando se inicia la pantalla
+    LaunchedEffect(Unit) {
+        selectedPhrase = try {
+            getRandomPhrase(lobbyCode, username)
+        } catch (e: Exception) {
+            Log.e("GameNormalScreen", "Error al obtener la frase: ${e.message}")
+            null // Si no hay frases disponibles, selectedPhrase será null
+        }
+    }
+
+    // Función para guardar la imagen en Firestore
+    fun saveImageToFirestore(bitmap: Bitmap) {
+        if (selectedPhrase == null) return // Si no hay frase seleccionada, no hacer nada
+
         val file = File(context.cacheDir, "drawing_image.png")
         try {
             val outputStream = FileOutputStream(file)
@@ -54,11 +76,51 @@ fun GameNormalScreen(navController: NavController) {
             outputStream.flush()
             outputStream.close()
 
-            val encodedFilePath = Uri.encode(file.absolutePath)
-            navController.navigate("guess_screen/$encodedFilePath")
+            // Convertir la imagen a bytes
+            val imageBytes = file.readBytes().map { it.toInt() }
+
+            // Guardar la imagen en Firestore
+            val imageData = hashMapOf(
+                "authorIds" to (selectedPhrase!!.authorIds + username), // Copia de authorIds + dibujante
+                "guessed" to false, // Inicialmente no adivinada
+                "image" to imageBytes, // Imagen en formato binario
+                "assigned" to false // Inicialmente no asignada
+            )
+
+            Firebase.firestore.collection("lobbies")
+                .document(lobbyCode)
+                .collection("drawings")
+                .add(imageData)
+                .addOnSuccessListener {
+                    // Actualizar la frase a "drawed: true" y "assigned: true"
+                    Firebase.firestore.collection("lobbies")
+                        .document(lobbyCode)
+                        .collection("phrases")
+                        .document(selectedPhrase!!.id) // Usar el ID de la frase
+                        .update(
+                            "drawed", true,
+                            "assigned", true
+                        )
+                        .addOnSuccessListener {
+                            Log.d("GameNormalScreen", "Frase actualizada a drawed: true y assigned: true")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("GameNormalScreen", "Error al actualizar la frase: ${e.message}")
+                        }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("GameNormalScreen", "Error al guardar la imagen: ${e.message}")
+                }
         } catch (e: IOException) {
             e.printStackTrace()
         }
+    }
+
+    // Función para guardar la imagen y redirigir
+    fun saveImage() {
+        val bitmap = drawingView.getBitmap()
+        saveImageToFirestore(bitmap)
+        navController.navigate("points_screen")
     }
 
     // Iniciar el temporizador
@@ -75,6 +137,17 @@ fun GameNormalScreen(navController: NavController) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        // Mostrar la frase seleccionada
+        Text(
+            text = "Frase: ${selectedPhrase?.text ?: "No hay frases disponibles"}",
+            color = Color.White,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF1E2D36))
+                .padding(8.dp),
+            style = MaterialTheme.typography.bodyMedium
+        )
+
         AndroidView(
             factory = { drawingView },
             modifier = Modifier
@@ -82,6 +155,7 @@ fun GameNormalScreen(navController: NavController) {
                 .weight(1f)
         )
 
+        // Resto del código (colores, grosor de línea, borrador, etc.)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -233,6 +307,60 @@ fun GameNormalScreen(navController: NavController) {
     }
 }
 
+// Función para obtener una frase aleatoria
+suspend fun getRandomPhrase(lobbyCode: String, username: String): Phrase {
+    var retries = 3 // Número de reintentos
+    while (retries > 0) {
+        try {
+            val phrases = Firebase.firestore.collection("lobbies")
+                .document(lobbyCode)
+                .collection("phrases")
+                .whereEqualTo("drawed", false)
+                .whereEqualTo("assigned", false) // Solo frases no asignadas
+                .get()
+                .await()
+                .documents
+                .mapNotNull { document ->
+                    val phrase = document.toObject(Phrase::class.java)
+                    phrase?.copy(id = document.id) // Asignar el ID del documento
+                }
+                .filter { !it.authorIds.contains(username) } // Filtrar frases no escritas por el jugador
+
+            if (phrases.isNotEmpty()) {
+                // Seleccionar una frase aleatoria
+                val randomPhrase = phrases.random()
+
+                // Marcar la frase como asignada
+                Firebase.firestore.collection("lobbies")
+                    .document(lobbyCode)
+                    .collection("phrases")
+                    .document(randomPhrase.id) // Usar el ID de la frase
+                    .update("assigned", true)
+                    .await()
+
+                return randomPhrase
+            }
+        } catch (e: Exception) {
+            Log.e("getRandomPhrase", "Error al obtener frases: ${e.message}")
+        }
+
+        // Esperar un momento antes de reintentar
+        delay(1000)
+        retries--
+    }
+
+    throw IllegalStateException("No hay frases disponibles para asignar después de varios intentos.")
+}
+
+// Modelo de datos para la frase
+data class Phrase(
+    val id: String = "",
+    val text: String = "",
+    val authorIds: List<String> = emptyList(),
+    val drawed: Boolean = false,
+    val assigned: Boolean = false, // Nuevo campo para marcar si la frase está asignada
+    val lobbyCode: String = ""
+)
 
 
 
