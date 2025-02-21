@@ -1,12 +1,14 @@
 package com.dadm.artisticall.gamemodes
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +55,7 @@ fun WritePhraseScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF1E2D36))
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -60,6 +63,7 @@ fun WritePhraseScreen(
         // Mostrar el tiempo restante
         Text(
             text = "Tiempo restante: $remainingTime segundos",
+            color = Color.White,
             style = AppTypography.bodyMedium.copy(fontSize = 20.sp),
             modifier = Modifier.padding(bottom = 16.dp)
         )

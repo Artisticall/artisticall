@@ -86,9 +86,14 @@ class MainActivity : ComponentActivity() {
                                 username = username ?: ""
                             )
                         }
-                        composable("guess_screen/{filePath}") { backStackEntry ->
-                            val filePath = backStackEntry.arguments?.getString("filePath") ?: ""
-                            GuessScreen(filePath, navController)
+                        composable("guess_screen/{lobbyCode}/{username}") { backStackEntry ->
+                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                            val username = backStackEntry.arguments?.getString("username")
+                            GuessScreen(
+                                navController = navController,
+                                lobbyCode = lobbyCode ?: "",
+                                username = username ?: ""
+                            )
                         }
                         composable("points_screen") {
                             PointsScreen(navController)

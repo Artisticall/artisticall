@@ -22,9 +22,11 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import kotlin.math.absoluteValue
 
 @Composable
 fun GameNormalScreen(
@@ -66,7 +68,8 @@ fun GameNormalScreen(
     }
 
     // Función para guardar la imagen en Firestore
-    fun saveImageToFirestore(bitmap: Bitmap) {
+// Función para guardar la imagen en Firestore
+    fun saveImageToFirestore(bitmap: Bitmap, onSuccess: (String) -> Unit) {
         if (selectedPhrase == null) return // Si no hay frase seleccionada, no hacer nada
 
         val file = File(context.cacheDir, "drawing_image.png")
@@ -91,7 +94,11 @@ fun GameNormalScreen(
                 .document(lobbyCode)
                 .collection("drawings")
                 .add(imageData)
-                .addOnSuccessListener {
+                .addOnSuccessListener { documentReference ->
+                    // Obtener el ID del documento recién creado
+                    val drawingId = documentReference.id
+                    Log.d("GameNormalScreen", "Dibujo guardado con ID: $drawingId")
+
                     // Actualizar la frase a "drawed: true" y "assigned: true"
                     Firebase.firestore.collection("lobbies")
                         .document(lobbyCode)
@@ -103,6 +110,8 @@ fun GameNormalScreen(
                         )
                         .addOnSuccessListener {
                             Log.d("GameNormalScreen", "Frase actualizada a drawed: true y assigned: true")
+                            // Llamar a onSuccess con el ID del dibujo
+                            onSuccess(drawingId)
                         }
                         .addOnFailureListener { e ->
                             Log.e("GameNormalScreen", "Error al actualizar la frase: ${e.message}")
@@ -119,8 +128,44 @@ fun GameNormalScreen(
     // Función para guardar la imagen y redirigir
     fun saveImage() {
         val bitmap = drawingView.getBitmap()
-        saveImageToFirestore(bitmap)
-        navController.navigate("points_screen")
+
+        // Guardar la imagen y obtener el ID del dibujo recién guardado
+        saveImageToFirestore(bitmap) { drawingId ->
+            // Obtener la lista de usernames del documento del juego
+            val gameRef = Firebase.firestore.collection("games")
+                .document(lobbyCode)
+
+            gameRef.get().addOnSuccessListener { gameSnapshot ->
+                val usernames = gameSnapshot.get("usernames") as? List<String> ?: emptyList()
+                Log.d("GameNormalScreen", "Usernames: $usernames")
+
+                // Obtener los authorIds del dibujo recién guardado
+                val drawingRef = Firebase.firestore.collection("lobbies")
+                    .document(lobbyCode)
+                    .collection("drawings")
+                    .document(drawingId)
+
+                drawingRef.get().addOnSuccessListener { drawingSnapshot ->
+                    val authorIds = drawingSnapshot.get("authorIds") as? List<String> ?: emptyList()
+                    Log.d("GameNormalScreen", "AuthorIds del dibujo: $authorIds")
+
+                    // Comparar las dos listas
+                    if (usernames.toSet() == authorIds.toSet()) {
+                        Log.d("GameNormalScreen", "Redirigiendo a pointscreen")
+                        navController.navigate("points_screen")
+                    } else {
+                        Log.d("GameNormalScreen", "Redirigiendo a guessscreen")
+                        navController.navigate("guess_screen/$lobbyCode/$username")
+                    }
+                }.addOnFailureListener { e ->
+                    Log.e("GameNormalScreen", "Error al obtener authorIds del dibujo: ${e.message}")
+                    navController.navigate("guess_screen/$lobbyCode/$username")
+                }
+            }.addOnFailureListener { e ->
+                Log.e("GameNormalScreen", "Error al obtener usernames: ${e.message}")
+                navController.navigate("guess_screen/$lobbyCode/$username")
+            }
+        }
     }
 
     // Iniciar el temporizador
@@ -309,48 +354,59 @@ fun GameNormalScreen(
 
 // Función para obtener una frase aleatoria
 suspend fun getRandomPhrase(lobbyCode: String, username: String): Phrase {
-    var retries = 3 // Número de reintentos
+    val firestore = Firebase.firestore
+    val phrasesRef = firestore.collection("lobbies")
+        .document(lobbyCode)
+        .collection("phrases")
+
+    var retries = 5
     while (retries > 0) {
         try {
-            val phrases = Firebase.firestore.collection("lobbies")
-                .document(lobbyCode)
-                .collection("phrases")
-                .whereEqualTo("drawed", false)
-                .whereEqualTo("assigned", false) // Solo frases no asignadas
-                .get()
-                .await()
-                .documents
+            val phrasesSnapshot = withTimeoutOrNull(5000) {
+                phrasesRef
+                    .whereEqualTo("drawed", false)
+                    .whereEqualTo("assigned", false)
+                    .get()
+                    .await()
+            } ?: throw IllegalStateException("La consulta tardó demasiado.")
+
+            val phrases = phrasesSnapshot.documents
                 .mapNotNull { document ->
                     val phrase = document.toObject(Phrase::class.java)
-                    phrase?.copy(id = document.id) // Asignar el ID del documento
+                    phrase?.copy(id = document.id)
                 }
-                .filter { !it.authorIds.contains(username) } // Filtrar frases no escritas por el jugador
+                .filter { !it.authorIds.contains(username) }
+                .sortedBy { it.id }
 
-            if (phrases.isNotEmpty()) {
-                // Seleccionar una frase aleatoria
-                val randomPhrase = phrases.random()
+            if (phrases.isEmpty()) throw IllegalStateException("No hay frases disponibles para asignar.")
 
-                // Marcar la frase como asignada
-                Firebase.firestore.collection("lobbies")
-                    .document(lobbyCode)
-                    .collection("phrases")
-                    .document(randomPhrase.id) // Usar el ID de la frase
-                    .update("assigned", true)
-                    .await()
+            // Calcular índice basado en el hash del nombre de usuario
+            val index = username.hashCode().absoluteValue % phrases.size
+            val selectedPhrase = phrases[index]
 
-                return randomPhrase
-            }
+            return firestore.runTransaction { transaction ->
+                val phraseDoc = phrasesRef.document(selectedPhrase.id)
+                val phraseSnapshot = transaction.get(phraseDoc)
+
+                if (phraseSnapshot.getBoolean("assigned") == true) {
+                    throw IllegalStateException("La frase ya fue asignada por otro dispositivo.")
+                }
+
+                transaction.update(phraseDoc, "assigned", true)
+                selectedPhrase
+            }.await()
+
         } catch (e: Exception) {
-            Log.e("getRandomPhrase", "Error al obtener frases: ${e.message}")
+            Log.e("getDeterministicPhrase", "Error al obtener frase: ${e.message}")
+            retries--
+            if (retries > 0) delay((5 - retries) * 1000L)
         }
-
-        // Esperar un momento antes de reintentar
-        delay(1000)
-        retries--
     }
 
-    throw IllegalStateException("No hay frases disponibles para asignar después de varios intentos.")
+    throw IllegalStateException("No hay frases disponibles después de varios intentos.")
 }
+
+
 
 // Modelo de datos para la frase
 data class Phrase(
