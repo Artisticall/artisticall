@@ -11,10 +11,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.dadm.artisticall.gamemodes.EvaluateDrawingScreen
 import com.dadm.artisticall.gamemodes.GameAdivinaScreen
 import com.dadm.artisticall.gamemodes.GameBatallaPincelesScreen
 import com.dadm.artisticall.gamemodes.GameColaborativoScreen
@@ -22,17 +24,17 @@ import com.dadm.artisticall.gamemodes.GameDesafioScreen
 import com.dadm.artisticall.gamemodes.GameEraseUnaVezScreen
 import com.dadm.artisticall.gamemodes.GameLibreScreen
 import com.dadm.artisticall.gamemodes.GameNormalScreen
-import com.dadm.artisticall.gamemodes.GameOjoDeAguilaScreen
+import com.dadm.artisticall.gamemodes.ojoDeAguila.GameOjoDeAguilaScreen
 import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
 import com.dadm.artisticall.gamemodes.GameSoloScreen
 import com.dadm.artisticall.gamemodes.GuessScreen
 import com.dadm.artisticall.gamemodes.WritePhraseScreen
+import com.dadm.artisticall.gamemodes.ojoDeAguila.ResultsScreen
 import com.dadm.artisticall.lobby.GameMode
 import com.dadm.artisticall.lobby.PointsScreen
 import com.dadm.artisticall.login.LoginScreen
 import com.dadm.artisticall.ui.theme.ArtisticallTheme
-import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,6 +122,22 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("game_desafio_screen") {
                             GameDesafioScreen(navController)
+                        }
+                        composable("results_screen") {
+                            ResultsScreen(navController = navController)
+                        }
+                        composable(
+                            route = "evaluate_screen/{originalImage}/{drawingPath}",
+                            arguments = listOf(
+                                navArgument("originalImage") { type = NavType.StringType },
+                                navArgument("drawingPath") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            EvaluateDrawingScreen(
+                                navController = navController,
+                                originalImageUrl = backStackEntry.arguments?.getString("originalImage") ?: "",
+                                drawingImagePath = backStackEntry.arguments?.getString("drawingPath") ?: ""
+                            )
                         }
                     },
                     enterTransition = {

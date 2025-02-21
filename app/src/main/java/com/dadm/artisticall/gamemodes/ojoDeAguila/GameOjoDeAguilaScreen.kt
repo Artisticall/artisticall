@@ -1,4 +1,4 @@
-package com.dadm.artisticall.gamemodes
+package com.dadm.artisticall.gamemodes.ojoDeAguila
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -21,6 +22,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlinx.coroutines.delay
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 
 @Composable
 fun GameOjoDeAguilaScreen(navController: NavController) {
@@ -39,12 +43,14 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
     val defaultLineSize = 10f
     var currentColor by remember { mutableStateOf(Color.Black) }
     var currentLineSize by remember { mutableStateOf(defaultLineSize) }
-
-    // Estado para el temporizador
-    var timeLeft by remember { mutableStateOf(50) }
+    var timeLeft by remember { mutableStateOf(7) }
     var isTimerRunning by remember { mutableStateOf(true) }
+    var imageUrl by remember {
+        mutableStateOf("https://picsum.photos/128/128?${System.currentTimeMillis()}")
+    }
 
-    // Función para guardar la imagen
+
+    // En GameOjoDeAguilaScreen.kt
     fun saveImage() {
         val bitmap = drawingView.getBitmap()
         val file = File(context.cacheDir, "drawing_image.png")
@@ -54,14 +60,17 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
             outputStream.flush()
             outputStream.close()
 
+            // Codificar ambos parámetros por separado
+            val encodedImageUrl = Uri.encode(imageUrl)
             val encodedFilePath = Uri.encode(file.absolutePath)
-            navController.navigate("guess_screen/$encodedFilePath")
+
+            // Usar los parámetros codificados en la navegación
+            navController.navigate("evaluate_screen/$encodedImageUrl/$encodedFilePath")
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
-    // Iniciar el temporizador
     LaunchedEffect(isTimerRunning) {
         while (isTimerRunning && timeLeft > 0) {
             delay(1000)
@@ -72,9 +81,19 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(imageUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = "Imagen a replicar",
+            modifier = Modifier
+                .size(128.dp)
+                .padding(8.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+
         AndroidView(
             factory = { drawingView },
             modifier = Modifier
@@ -232,8 +251,3 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
         }
     }
 }
-
-
-
-
-
