@@ -151,7 +151,7 @@ fun GameNormalScreen(
                     // Comparar las dos listas
                     if (usernames.toSet() == authorIds.toSet()) {
                         Log.d("GameNormalScreen", "Redirigiendo a pointscreen")
-                        navController.navigate("points_screen")
+                        navController.navigate("final_sequence_screen/$lobbyCode/$username")
                     } else {
                         Log.d("GameNormalScreen", "Redirigiendo a guessscreen")
                         navController.navigate("guess_screen/$lobbyCode/$username")
@@ -179,7 +179,9 @@ fun GameNormalScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 32.dp) // Margen superior para evitar solapamiento
     ) {
         // Mostrar la frase seleccionada
         Text(

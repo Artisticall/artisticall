@@ -126,7 +126,7 @@ fun GuessScreen(
             // Comparar las dos listas
             if (usernames.toSet() == authorIds.toSet()) {
                 Log.d("GuessScreen", "Redirigiendo a points_screen")
-                navController.navigate("points_screen")
+                navController.navigate("final_sequence_screen/$lobbyCode/$username")
             } else {
                 Log.d("GuessScreen", "Redirigiendo a game_normal_screen")
                 navController.navigate("game_normal_screen/$lobbyCode/$username")

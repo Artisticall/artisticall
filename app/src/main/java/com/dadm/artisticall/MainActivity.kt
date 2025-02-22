@@ -27,6 +27,7 @@ import com.dadm.artisticall.gamemodes.modoNormal.GameNormalScreen
 import com.dadm.artisticall.gamemodes.ojoDeAguila.GameOjoDeAguilaScreen
 import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
+import com.dadm.artisticall.gamemodes.modoNormal.FinalSequenceScreen
 import com.dadm.artisticall.gamemodes.modoSolo.GameSoloScreen
 import com.dadm.artisticall.gamemodes.modoNormal.GuessScreen
 import com.dadm.artisticall.gamemodes.modoNormal.WritePhraseScreen
@@ -91,6 +92,15 @@ class MainActivity : ComponentActivity() {
                             val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
                             val username = backStackEntry.arguments?.getString("username")
                             GuessScreen(
+                                navController = navController,
+                                lobbyCode = lobbyCode ?: "",
+                                username = username ?: ""
+                            )
+                        }
+                        composable("final_sequence_screen/{lobbyCode}/{username}") { backStackEntry ->
+                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                            val username = backStackEntry.arguments?.getString("username")
+                            FinalSequenceScreen(
                                 navController = navController,
                                 lobbyCode = lobbyCode ?: "",
                                 username = username ?: ""
