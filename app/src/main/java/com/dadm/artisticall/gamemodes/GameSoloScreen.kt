@@ -1,7 +1,8 @@
-package com.dadm.artisticall.gamemodes
+package com.dadm.artisticall.gamemodes.modoSolo
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -17,6 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.dadm.artisticall.drawing.DrawingView
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -60,6 +63,48 @@ fun GameSoloScreen(navController: NavController) {
             e.printStackTrace()
         }
     }
+    fun saveImage() {
+        val bitmap = drawingView.getBitmap()
+
+        // Guardar la imagen y obtener el ID del dibujo recién guardado
+        saveImageToFirestore(bitmap) { drawingId ->
+            // Obtener la lista de usernames del documento del juego
+            val gameRef = Firebase.firestore.collection("games")
+                .document(lobbyCode)
+
+            gameRef.get().addOnSuccessListener { gameSnapshot ->
+                val usernames = gameSnapshot.get("usernames") as? List<String> ?: emptyList()
+                Log.d("GameNormalScreen", "Usernames: $usernames")
+
+                // Obtener los authorIds del dibujo recién guardado
+                val drawingRef = Firebase.firestore.collection("lobbies")
+                    .document(lobbyCode)
+                    .collection("drawings")
+                    .document(drawingId)
+
+                drawingRef.get().addOnSuccessListener { drawingSnapshot ->
+                    val authorIds = drawingSnapshot.get("authorIds") as? List<String> ?: emptyList()
+                    Log.d("GameNormalScreen", "AuthorIds del dibujo: $authorIds")
+
+                    // Comparar las dos listas
+                    if (usernames.toSet() == authorIds.toSet()) {
+                        Log.d("GameNormalScreen", "Redirigiendo a pointscreen")
+                        navController.navigate("points_screen")
+                    } else {
+                        Log.d("GameNormalScreen", "Redirigiendo a guessscreen")
+                        navController.navigate("guess_screen/$lobbyCode/$username")
+                    }
+                }.addOnFailureListener { e ->
+                    Log.e("GameNormalScreen", "Error al obtener authorIds del dibujo: ${e.message}")
+                    navController.navigate("guess_screen/$lobbyCode/$username")
+                }
+            }.addOnFailureListener { e ->
+                Log.e("GameNormalScreen", "Error al obtener usernames: ${e.message}")
+                navController.navigate("guess_screen/$lobbyCode/$username")
+            }
+        }
+    }
+
 
     // Iniciar el temporizador
     LaunchedEffect(isTimerRunning) {
