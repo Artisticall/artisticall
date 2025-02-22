@@ -27,9 +27,10 @@ import com.dadm.artisticall.gamemodes.modoNormal.GameNormalScreen
 import com.dadm.artisticall.gamemodes.ojoDeAguila.GameOjoDeAguilaScreen
 import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
-import com.dadm.artisticall.gamemodes.GameSoloScreen
+import com.dadm.artisticall.gamemodes.modoSolo.GameSoloScreen
 import com.dadm.artisticall.gamemodes.modoNormal.GuessScreen
 import com.dadm.artisticall.gamemodes.modoNormal.WritePhraseScreen
+import com.dadm.artisticall.gamemodes.modoSolo.SoloGuess
 import com.dadm.artisticall.gamemodes.ojoDeAguila.ResultsScreen
 import com.dadm.artisticall.lobby.GameMode
 import com.dadm.artisticall.lobby.PointsScreen
@@ -100,6 +101,13 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("game_solo_screen") {
                             GameSoloScreen(navController)
+                        }
+                        composable(
+                            "guess_solo_screen/{imagePath}",
+                            arguments = listOf(navArgument("imagePath") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val imagePath = backStackEntry.arguments?.getString("imagePath") ?: ""
+                            SoloGuess(navController, imagePath)
                         }
                         composable("game_adivina_screen") {
                             GameAdivinaScreen(navController)

@@ -17,6 +17,7 @@ googleid = "1.1.1"
 
 firebaseBom = "33.3.0"
 gmsGoogleServices = "4.4.2"
+tensorflowLiteSupport = "0.4.4"
 uiTextGoogleFonts = "1.7.5"
 foundationAndroid = "1.7.2"
 firebaseCrashlyticsBuildtools = "3.0.2"
@@ -55,6 +56,7 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

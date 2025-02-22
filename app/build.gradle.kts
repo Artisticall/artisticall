@@ -111,5 +111,7 @@ dependencies {
 
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+    implementation("org.tensorflow:tensorflow-lite:2.13.0")
+    implementation(libs.tensorflow.lite.support)
 
 }
