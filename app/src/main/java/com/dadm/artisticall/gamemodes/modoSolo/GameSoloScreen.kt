@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -41,7 +42,7 @@ fun GameSoloScreen(navController: NavController) {
     var currentLineSize by remember { mutableStateOf(defaultLineSize) }
 
     // Estado para el temporizador
-    var timeLeft by remember { mutableStateOf(50) }
+    var timeLeft by remember { mutableStateOf(30) }
     var isTimerRunning by remember { mutableStateOf(true) }
 
     // Función para guardar la imagen
@@ -74,13 +75,24 @@ fun GameSoloScreen(navController: NavController) {
 
     Column(
         modifier = Modifier.fillMaxSize()
+            .background(Color(0xFF1E2D36))
+        ,
     ) {
-        AndroidView(
-            factory = { drawingView },
+        // Contenedor para centrar el DrawingView
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f)
-        )
+                .weight(1f) // Ocupa el espacio restante
+                .background(Color(0xFF1E2D36)), // Fondo blanco para el área de dibujo
+            contentAlignment = Alignment.Center //
+        ){AndroidView(
+            factory = { drawingView },
+            modifier = Modifier
+                .size(200.dp)
+
+
+
+        )}
 
         Column(
             modifier = Modifier

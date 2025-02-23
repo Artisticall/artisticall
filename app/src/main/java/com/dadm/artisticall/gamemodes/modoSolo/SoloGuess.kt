@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import com.dadm.artisticall.ui.theme.tertiaryDark
 
 
 @Composable
@@ -36,6 +39,7 @@ fun SoloGuess(navController: NavController, imagePath: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background( tertiaryDark)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -46,16 +50,24 @@ fun SoloGuess(navController: NavController, imagePath: String) {
         Spacer(modifier = Modifier.height(20.dp))
         Text(text = "Predicción: $prediction", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = { navController.popBackStack() }) {
+        Button(onClick = { navController.popBackStack() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFFFA040)
+            )
+            ) {
             Text("Volver")
+
         }
-        Button(
-            onClick = {
-                navController.navigate("lobby_screen")
-            },
-        ) {
-            Text(text = "Lobby")
-        }
+      //  Button(
+        //    onClick = {
+          //      navController.navigate("lobby_screen")
+           // },
+           // colors = ButtonDefaults.buttonColors(
+             //   containerColor = tertiaryDark
+       //     )
+       // ) {
+         //   Text(text = "Lobby")
+       // }
     }
 }
 fun loadBitmapFromPath(context: Context, path: String): Bitmap? {
