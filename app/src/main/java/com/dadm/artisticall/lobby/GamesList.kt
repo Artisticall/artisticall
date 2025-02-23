@@ -69,7 +69,7 @@ fun GamesList(
             "Adivina la Palabra",
             "Adivina la palabra oculta",
             "Adivina la palabra que otro jugador dibuja. ¡Gana puntos por velocidad y precisión!",
-            "game_adivina_screen",
+            "game_adivina_screen/{lobbyCode}/{username}",
             "https://cdn-icons-png.freepik.com/512/17059/17059832.png?ga=GA1.1.1882402121.1739594082"),
         GameMode(
             "¿Qué es esto?",

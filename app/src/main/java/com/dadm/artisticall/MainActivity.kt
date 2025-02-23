@@ -17,7 +17,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dadm.artisticall.gamemodes.EvaluateDrawingScreen
-import com.dadm.artisticall.gamemodes.GameAdivinaScreen
 import com.dadm.artisticall.gamemodes.GameBatallaPincelesScreen
 import com.dadm.artisticall.gamemodes.GameColaborativoScreen
 import com.dadm.artisticall.gamemodes.GameDesafioScreen
@@ -27,6 +26,7 @@ import com.dadm.artisticall.gamemodes.modoNormal.GameNormalScreen
 import com.dadm.artisticall.gamemodes.ojoDeAguila.GameOjoDeAguilaScreen
 import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
+import com.dadm.artisticall.gamemodes.modoAdivina.GameAdivinaScreen
 import com.dadm.artisticall.gamemodes.modoNormal.FinalSequenceScreen
 import com.dadm.artisticall.gamemodes.modoSolo.GameSoloScreen
 import com.dadm.artisticall.gamemodes.modoNormal.GuessScreen
@@ -119,8 +119,14 @@ class MainActivity : ComponentActivity() {
                             val imagePath = backStackEntry.arguments?.getString("imagePath") ?: ""
                             SoloGuess(navController, imagePath)
                         }
-                        composable("game_adivina_screen") {
-                            GameAdivinaScreen(navController)
+                        composable("game_adivina_screen/{lobbyCode}/{username}") { backStackEntry ->
+                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                            val username = backStackEntry.arguments?.getString("username")
+                            GameAdivinaScreen(
+                                navController = navController,
+                                lobbyCode = lobbyCode ?: "",
+                                username = username ?: ""
+                            )
                         }
                         composable("game_que_es_esto_screen") {
                             GameQueEsEstoScreen(navController)
