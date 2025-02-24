@@ -23,14 +23,21 @@ import com.dadm.artisticall.gamemodes.GameDesafioScreen
 import com.dadm.artisticall.gamemodes.GameEraseUnaVezScreen
 import com.dadm.artisticall.gamemodes.GameLibreScreen
 import com.dadm.artisticall.gamemodes.modoNormal.GameNormalScreen
+import com.dadm.artisticall.gamemodes.modoNormal.FinalSequenceScreen
+import com.dadm.artisticall.gamemodes.modoNormal.WritePhraseScreen
+import com.dadm.artisticall.gamemodes.modoNormal.GuessScreen
+
+import com.dadm.artisticall.gamemodes.modoDesafio.GameDesafioScreen
+import com.dadm.artisticall.gamemodes.modoDesafio.FinalSequenceScreenDesafio
+import com.dadm.artisticall.gamemodes.modoDesafio.WritePhraseScreenDesafio
+import com.dadm.artisticall.gamemodes.modoDesafio.GuessScreenDesafio
+
+
 import com.dadm.artisticall.gamemodes.ojoDeAguila.GameOjoDeAguilaScreen
 import com.dadm.artisticall.gamemodes.GamePonleTituloScreen
 import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
 import com.dadm.artisticall.gamemodes.modoAdivina.GameAdivinaScreen
-import com.dadm.artisticall.gamemodes.modoNormal.FinalSequenceScreen
 import com.dadm.artisticall.gamemodes.modoSolo.GameSoloScreen
-import com.dadm.artisticall.gamemodes.modoNormal.GuessScreen
-import com.dadm.artisticall.gamemodes.modoNormal.WritePhraseScreen
 import com.dadm.artisticall.gamemodes.modoSolo.SoloGuess
 import com.dadm.artisticall.gamemodes.ojoDeAguila.ResultsScreen
 import com.dadm.artisticall.lobby.GameMode
@@ -70,6 +77,7 @@ class MainActivity : ComponentActivity() {
                                 onGameModeSelected = onGameModeSelected
                             )
                         }
+
                         composable("write_phrase_screen/{lobbyCode}/{username}") { backStackEntry ->
                             val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
                             val username = backStackEntry.arguments?.getString("username")
@@ -106,6 +114,46 @@ class MainActivity : ComponentActivity() {
                                 username = username ?: ""
                             )
                         }
+
+                       // NAVEGATION THE DESAFIO
+
+                       composable("write_phrase_screen_desafio/{lobbyCode}/{username}") { backStackEntry ->
+                           val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                           val username = backStackEntry.arguments?.getString("username")
+                           WritePhraseScreenDesafio(
+                               navController = navController,
+                               lobbyCode = lobbyCode ?: "",
+                               username = username ?: ""
+                           )
+                       }
+                       composable("game_desafio_screen/{lobbyCode}/{username}") {backStackEntry ->
+                           val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                           val username = backStackEntry.arguments?.getString("username")
+                           GameDesafioScreen(
+                               navController = navController,
+                               lobbyCode = lobbyCode ?: "",
+                               username = username ?: ""
+                           )
+                       }
+                       composable("guess_screen_desafio/{lobbyCode}/{username}") { backStackEntry ->
+                           val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                           val username = backStackEntry.arguments?.getString("username")
+                           GuessScreenDesafio(
+                               navController = navController,
+                               lobbyCode = lobbyCode ?: "",
+                               username = username ?: ""
+                           )
+                       }
+                       composable("final_sequence_screen_desafio/{lobbyCode}/{username}") { backStackEntry ->
+                           val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                           val username = backStackEntry.arguments?.getString("username")
+                           FinalSequenceScreenDesafio(
+                               navController = navController,
+                               lobbyCode = lobbyCode ?: "",
+                               username = username ?: ""
+                           )
+                       }
+
                         composable("points_screen") {
                             PointsScreen(navController)
                         }

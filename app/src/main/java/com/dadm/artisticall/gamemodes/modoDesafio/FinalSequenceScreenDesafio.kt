@@ -1,4 +1,4 @@
-package com.dadm.artisticall.gamemodes.modoNormal
+package com.dadm.artisticall.gamemodes.modoDesafio
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,13 +13,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.dadm.artisticall.gamemodes.Phrase
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
+import com.dadm.artisticall.gamemodes.Phrase
 
 @Composable
-fun FinalSequenceScreen(
+fun FinalSequenceScreenDesafio(
     navController: NavController,
     lobbyCode: String,
     username: String

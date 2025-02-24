@@ -117,8 +117,9 @@ fun GamesList(
             "Modo Desafío",
             "Desafíos rápidos para ganar puntos",
             "Supera retos como dibujar con tiempo limitado o usando solo ciertos colores. ¡Demuestra tu creatividad bajo presión!",
-            "game_desafio_screen",
+            "write_phrase_screen_desafio/{lobbyCode}/{username}",
             "https://cdn-icons-png.freepik.com/512/12476/12476761.png?ga=GA1.1.1882402121.1739594082")
+
     )
 
     LazyColumn(
