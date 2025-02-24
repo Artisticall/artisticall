@@ -129,11 +129,11 @@ fun GuessScreenDesafio(
                 navController.navigate("final_sequence_screen/$lobbyCode/$username")
             } else {
                 Log.d("GuessScreen", "Redirigiendo a game_normal_screen")
-                navController.navigate("game_normal_screen/$lobbyCode/$username")
+                navController.navigate("game_desafio_screen/$lobbyCode/$username")
             }
         } catch (e: Exception) {
             Log.e("GuessScreen", "Error al obtener datos: ${e.message}")
-            navController.navigate("game_normal_screen/$lobbyCode/$username")
+            navController.navigate("game_desafio_screen/$lobbyCode/$username")
         }
     }
 

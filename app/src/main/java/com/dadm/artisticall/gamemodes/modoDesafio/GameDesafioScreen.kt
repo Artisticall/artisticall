@@ -173,18 +173,18 @@ fun GameDesafioScreen(
                     // Comparar las dos listas
                     if (usernames.toSet() == authorIds.toSet()) {
                         Log.d("GameNormalScreen", "Redirigiendo a pointscreen")
-                        navController.navigate("final_sequence_screen/$lobbyCode/$username")
+                        navController.navigate("final_sequence_screen_desafio/$lobbyCode/$username")
                     } else {
                         Log.d("GameNormalScreen", "Redirigiendo a guessscreen")
-                        navController.navigate("guess_screen/$lobbyCode/$username")
+                        navController.navigate("game_desafio_screen/$lobbyCode/$username")
                     }
                 }.addOnFailureListener { e ->
                     Log.e("GameNormalScreen", "Error al obtener authorIds del dibujo: ${e.message}")
-                    navController.navigate("guess_screen/$lobbyCode/$username")
+                    navController.navigate("guess_screen_desafio/$lobbyCode/$username")
                 }
             }.addOnFailureListener { e ->
                 Log.e("GameNormalScreen", "Error al obtener usernames: ${e.message}")
-                navController.navigate("guess_screen/$lobbyCode/$username")
+                navController.navigate("guess_screen_desafio/$lobbyCode/$username")
             }
         }
     }

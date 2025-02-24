@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                       // NAVEGATION THE DESAFIO
+                       // navigation desafio
 
                        composable("write_phrase_screen_desafio/{lobbyCode}/{username}") { backStackEntry ->
                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
