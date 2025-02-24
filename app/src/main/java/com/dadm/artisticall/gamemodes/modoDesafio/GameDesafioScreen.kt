@@ -72,8 +72,8 @@ fun GameDesafioScreen(
     }
 
     // Tiempo aleatorio entre 20 y 50 segundos
-    val randomTime = remember { (20..50).random() }
-    var timeLeft by remember { mutableStateOf(randomTime) }
+    var timeLeft by remember { mutableStateOf(30) }
+
     var isTimerRunning by remember { mutableStateOf(true) }
 
     // Estado para la frase seleccionada
