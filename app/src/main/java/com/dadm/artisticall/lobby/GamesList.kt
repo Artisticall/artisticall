@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.dadm.artisticall.R
 import com.dadm.artisticall.ui.theme.AppTypography
 import com.dadm.artisticall.ui.theme.onPrimaryDark
 import com.dadm.artisticall.ui.theme.primaryContainerDark
@@ -51,75 +52,95 @@ fun GamesList(
     selectedGameMode: GameMode?,
     onGameModeSelected: (GameMode?) -> Unit
 ) {
-
     val gameModes = listOf(
         GameMode(
             "Normal",
             "Juego clásico",
             "Alterna entre escribir frases y dibujarlas. Descubre cómo evolucionan las ideas de todos en una secuencia divertida y colaborativa.",
             "write_phrase_screen/{lobbyCode}/{username}",
-            "https://cdn-icons-png.freepik.com/512/3964/3964965.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/3964/3964965.png?ga=GA1.1.1882402121.1739594082",
+            false
+        ),
         GameMode(
             "Solo",
             "Juega en solitario",
             "Disfruta de un espacio tranquilo para dibujar sin competencia. Perfecto para practicar o relajarte creando.",
             "game_solo_screen",
-            "https://cdn-icons-png.freepik.com/512/2491/2491519.png?ga=GA1.1.1882402121.1739594082")        ,
+            "https://cdn-icons-png.freepik.com/512/2491/2491519.png?ga=GA1.1.1882402121.1739594082",
+            false
+        ),
         GameMode(
             "Adivina la Palabra",
             "Adivina la palabra oculta",
             "Adivina la palabra que otro jugador dibuja. ¡Gana puntos por velocidad y precisión!",
             "game_adivina_screen/{lobbyCode}/{username}",
-            "https://cdn-icons-png.freepik.com/512/17059/17059832.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/17059/17059832.png?ga=GA1.1.1882402121.1739594082",
+            false
+        ),
         GameMode(
             "¿Qué es esto?",
             "Intenta adivinar el objeto a partir de pistas",
             "Continúa el dibujo de otro jugador con una parte oculta. ¡Sorpréndete con los resultados inesperados!",
             "game_que_es_esto_screen",
-            "https://cdn-icons-png.freepik.com/512/5579/5579510.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/5579/5579510.png?ga=GA1.1.1882402121.1739594082",
+            true
+        ),
         GameMode(
             "Batalla de Pinceles",
             "Compite dibujando",
             "Compite en rondas de dibujo basadas en un tema. Vota por el mejor dibujo y acumula puntos para ganar.",
             "game_batalla_pinceles_screen",
-            "https://cdn-icons-png.freepik.com/512/1313/1313485.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/1313/1313485.png?ga=GA1.1.1882402121.1739594082",
+            true
+        ),
         GameMode(
             "Ponle Título",
             "Ponle título a una imagen",
             "Crea el título más ingenioso para un dibujo. ¡Humor y creatividad son la clave para ganar!",
             "game_ponle_titulo_screen",
-            "https://cdn-icons-png.freepik.com/512/16606/16606642.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/16606/16606642.png?ga=GA1.1.1882402121.1739594082",
+            true
+        ),
         GameMode(
             "Érase una vez",
             "Crea historias de manera colaborativa",
             "Construye una historia visual con otros jugadores. Cada dibujo añade un nuevo capítulo a la narrativa.",
             "game_erase_una_vez_screen",
-            "https://cdn-icons-png.freepik.com/512/8013/8013787.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/8013/8013787.png?ga=GA1.1.1882402121.1739594082",
+            true
+        ),
         GameMode(
             "Modo Libre",
             "Dibuja lo que quieras",
             "Dibuja lo que quieras sin restricciones. Elige un tema o déjalo al azar para una experiencia relajada.",
             "game_libre_screen",
-            "https://cdn-icons-png.freepik.com/512/12141/12141689.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/12141/12141689.png?ga=GA1.1.1882402121.1739594082",
+            false
+        ),
         GameMode(
             "Ojo de Águila",
             "Adivina el objeto a partir de un pequeño detalle",
             "Reproduce una imagen con la mayor precisión posible. ¡Enfócate en los detalles para ganar!",
             "game_ojo_de_aguila_screen",
-            "https://cdn-icons-png.freepik.com/512/983/983890.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/983/983890.png?ga=GA1.1.1882402121.1739594082",
+            false
+        ),
         GameMode(
             "Modo Colaborativo",
             "Trabaja en equipo para lograr un objetivo",
             "Trabaja en equipo para crear una obra de arte colectiva. Cada jugador aporta su estilo único.",
             "game_colaborativo_screen",
-            "https://cdn-icons-png.freepik.com/512/11399/11399186.png?ga=GA1.1.1882402121.1739594082"),
+            "https://cdn-icons-png.freepik.com/512/11399/11399186.png?ga=GA1.1.1882402121.1739594082",
+            true
+        ),
         GameMode(
             "Modo Desafío",
             "Desafíos rápidos para ganar puntos",
             "Supera retos como dibujar con tiempo limitado o usando solo ciertos colores. ¡Demuestra tu creatividad bajo presión!",
             "write_phrase_screen_desafio/{lobbyCode}/{username}",
-            "https://cdn-icons-png.freepik.com/512/12476/12476761.png?ga=GA1.1.1882402121.1739594082")
-
+            "https://cdn-icons-png.freepik.com/512/12476/12476761.png?ga=GA1.1.1882402121.1739594082",
+            false
+        )
     )
 
     LazyColumn(
@@ -128,7 +149,9 @@ fun GamesList(
     ) {
         items(gameModes) { mode ->
             GameModeCard(mode, selectedGameMode) {
-                onGameModeSelected(mode)
+                if (!mode.isLocked) {
+                    onGameModeSelected(mode)
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -138,72 +161,94 @@ fun GamesList(
 @Composable
 fun GameModeCard(mode: GameMode, selectedGameMode: GameMode?, onClick: () -> Unit) {
     val isSelected = mode == selectedGameMode
+    val isLocked = mode.isLocked
 
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
             .shadow(elevation = 8.dp, shape = RoundedCornerShape(12.dp))
-            .background(
-                color = if (isSelected) primaryDark else secondaryDark,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .border(
-                width = 2.dp,
-                color = if (isSelected) primaryDark else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) primaryContainerDark else primaryDark,
-        ),
+            .clickable { onClick() }
     ) {
-        Row(
+        Card(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                .background(
+                    color = if (isSelected) primaryDark else if (isLocked) Color.Gray else secondaryDark,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .border(
+                    width = 2.dp,
+                    color = if (isSelected) primaryDark else Color.Transparent,
+                    shape = RoundedCornerShape(12.dp)
+                ),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isSelected) primaryContainerDark else if (isLocked) Color.LightGray else primaryDark,
+            ),
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(mode.iconUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Game Icon",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(primaryDark, CircleShape)
+                        .padding(8.dp),
+                    contentScale = ContentScale.Crop
+                )
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = mode.title,
+                        style = AppTypography.bodyLarge.copy(
+                            fontSize = 20.sp,
+                            color = if (isSelected) Color.White else if (isLocked) Color.DarkGray else onPrimaryDark
+                        ),
+                        textAlign = TextAlign.Start
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = mode.description,
+                        style = AppTypography.bodySmall.copy(
+                            fontSize = 14.sp,
+                            color = if (isSelected) Color.White.copy(alpha = 0.8f) else if (isLocked) Color.DarkGray.copy(alpha = 0.8f) else onPrimaryDark.copy(alpha = 0.8f)
+                        ),
+                        textAlign = TextAlign.Start
+                    )
+                }
+            }
+        }
+
+        // Superponer la imagen de cadenas si el juego está bloqueado
+        if (isLocked) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(mode.iconUrl)
+                    .data(R.drawable.ic_lock) // Asegúrate de tener esta imagen en res/drawable
                     .crossfade(true)
                     .build(),
-                contentDescription = "Game Icon",
+                contentDescription = "Lock Icon",
                 modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(primaryDark, CircleShape)
-                    .padding(8.dp),
+                    .fillMaxSize() // Extiende la imagen para cubrir toda la tarjeta
+                    .clip(RoundedCornerShape(12.dp)) // Ajusta el borde para que coincida con la tarjeta
+                    .background(Color.Black.copy(alpha = 0.5f)), // Opcional: Añade un fondo semitransparente
                 contentScale = ContentScale.Crop
             )
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = mode.title,
-                    style = AppTypography.bodyLarge.copy(
-                        fontSize = 20.sp,
-                        color = if (isSelected) Color.White else onPrimaryDark
-                    ),
-                    textAlign = TextAlign.Start
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = mode.description,
-                    style = AppTypography.bodySmall.copy(
-                        fontSize = 14.sp,
-                        color = if (isSelected) Color.White.copy(alpha = 0.8f) else onPrimaryDark.copy(alpha = 0.8f)
-                    ),
-                    textAlign = TextAlign.Start
-                )
-            }
         }
     }
 }
@@ -213,5 +258,6 @@ data class GameMode(
     val description: String,
     val descriptionLong: String,
     val route: String,
-    val iconUrl: String
+    val iconUrl: String,
+    val isLocked: Boolean
 )
