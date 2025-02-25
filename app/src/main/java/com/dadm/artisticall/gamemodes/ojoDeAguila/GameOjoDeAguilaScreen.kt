@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import com.dadm.artisticall.drawing.DrawingView
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -25,9 +27,14 @@ import kotlinx.coroutines.delay
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import java.io.FileInputStream
 
 @Composable
-fun GameOjoDeAguilaScreen(navController: NavController) {
+fun GameOjoDeAguilaScreen(
+    navController: NavController,
+    lobbyCode: String,
+    username: String
+) {
     val context = LocalContext.current
     val drawingView = remember { DrawingView(context) }
     val colors = listOf(
@@ -43,14 +50,13 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
     val defaultLineSize = 10f
     var currentColor by remember { mutableStateOf(Color.Black) }
     var currentLineSize by remember { mutableStateOf(defaultLineSize) }
-    var timeLeft by remember { mutableStateOf(7) }
+    var timeLeft by remember { mutableStateOf(20) }
     var isTimerRunning by remember { mutableStateOf(true) }
     var imageUrl by remember {
         mutableStateOf("https://picsum.photos/128/128?${System.currentTimeMillis()}")
     }
 
-
-    // En GameOjoDeAguilaScreen.kt
+    // Guardar la imagen y el estado del juego
     fun saveImage() {
         val bitmap = drawingView.getBitmap()
         val file = File(context.cacheDir, "drawing_image.png")
@@ -60,12 +66,8 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
             outputStream.flush()
             outputStream.close()
 
-            // Codificar ambos parámetros por separado
-            val encodedImageUrl = Uri.encode(imageUrl)
-            val encodedFilePath = Uri.encode(file.absolutePath)
-
-            // Usar los parámetros codificados en la navegación
-            navController.navigate("evaluate_screen/$encodedImageUrl/$encodedFilePath")
+            // Navegar a la pantalla de evaluación con los parámetros necesarios
+            navController.navigate("evaluate_screen/$imageUrl/${file.absolutePath}/$lobbyCode/$username")
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -81,7 +83,11 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1E2D36))
+    ) {
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(imageUrl)
@@ -89,7 +95,7 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
                 .build(),
             contentDescription = "Imagen a replicar",
             modifier = Modifier
-                .size(128.dp)
+                .size(width = 180.dp, height = 250.dp)
                 .padding(8.dp)
                 .align(Alignment.CenterHorizontally)
         )
