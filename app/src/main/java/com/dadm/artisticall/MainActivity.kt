@@ -207,7 +207,14 @@ class MainActivity : ComponentActivity() {
                             GameDesafioScreen(navController)
                         }
                         composable("results_screen") {
-                            ResultsScreen(navController = navController)
+                                backStackEntry ->
+                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                            val username = backStackEntry.arguments?.getString("username")
+                            ResultsScreen(
+                                navController = navController,
+                                lobbyCode = lobbyCode ?: "",
+                                username = username ?: ""
+                            )
                         }
                         composable(
                             route = "evaluate_screen/{originalImage}/{drawingPath}",

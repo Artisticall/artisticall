@@ -18,7 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun ResultsScreen(navController: NavController) {
+fun ResultsScreen(
+                  navController: NavController,
+                  lobbyCode: String,
+                  username: String) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,8 +39,7 @@ fun ResultsScreen(navController: NavController) {
 
         Button(
             onClick = {
-
-
+                navController.navigate("lobby_screen/$lobbyCode/$username")
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA040))
         ) {

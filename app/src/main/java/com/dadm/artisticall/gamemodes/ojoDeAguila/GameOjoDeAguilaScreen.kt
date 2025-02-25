@@ -43,7 +43,7 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
     val defaultLineSize = 10f
     var currentColor by remember { mutableStateOf(Color.Black) }
     var currentLineSize by remember { mutableStateOf(defaultLineSize) }
-    var timeLeft by remember { mutableStateOf(7) }
+    var timeLeft by remember { mutableStateOf(40) }
     var isTimerRunning by remember { mutableStateOf(true) }
     var imageUrl by remember {
         mutableStateOf("https://picsum.photos/128/128?${System.currentTimeMillis()}")
@@ -89,7 +89,8 @@ fun GameOjoDeAguilaScreen(navController: NavController) {
                 .build(),
             contentDescription = "Imagen a replicar",
             modifier = Modifier
-                .size(128.dp)
+                .height(250.dp)  // Increased from 128.dp to 200.dp
+                .width(200  .dp)   // Keeping the same width
                 .padding(8.dp)
                 .align(Alignment.CenterHorizontally)
         )

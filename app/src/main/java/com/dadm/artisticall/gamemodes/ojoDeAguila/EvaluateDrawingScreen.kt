@@ -21,7 +21,6 @@ fun EvaluateDrawingScreen(
     navController: NavController,
     originalImageUrl: String,
     drawingImagePath: String,
-
 ) {
     var rating by remember { mutableStateOf(0) }
     val context = LocalContext.current
@@ -30,7 +29,8 @@ fun EvaluateDrawingScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "Evalúa el dibujo",
@@ -38,32 +38,43 @@ fun EvaluateDrawingScreen(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            // Imagen original
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(originalImageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Imagen original",
-                modifier = Modifier.size(150.dp)
-            )
+        // Imagen original
+        Text(
+            text = "Original",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(originalImageUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = "Imagen original",
+            modifier = Modifier
+                .height(200.dp)
+                .width(200.dp)
+                .padding(bottom = 24.dp)
+        )
 
-            // Dibujo del usuario
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(drawingImagePath)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Dibujo del usuario",
-                modifier = Modifier.size(150.dp)
-            )
-        }
+        // Dibujo del usuario
+        Text(
+            text = "Tu dibujo",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(drawingImagePath)
+                .crossfade(true)
+                .build(),
+            contentDescription = "Dibujo del usuario",
+            modifier = Modifier
+                .height(200.dp)
+                .width(200.dp)
+                .padding(bottom = 24.dp)
+        )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "¿Qué tan parecido es el dibujo a la imagen original?",
@@ -84,13 +95,14 @@ fun EvaluateDrawingScreen(
                     Icon(
                         imageVector = if (star <= rating) Icons.Filled.Star else Icons.Outlined.Star,
                         contentDescription = "Estrella $star",
-                        tint = if (star <= rating) Color(0xFFFFA040) else Color.Gray
+                        tint = if (star <= rating) Color(0xFFFFA040) else Color.Gray,
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
@@ -99,7 +111,10 @@ fun EvaluateDrawingScreen(
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFFFA040)
-            )
+            ),
+            modifier = Modifier
+                .height(50.dp)
+                .width(200.dp)
         ) {
             Text("Enviar calificación")
         }
