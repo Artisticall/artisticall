@@ -23,7 +23,11 @@ import java.io.IOException
 import kotlinx.coroutines.delay
 
 @Composable
-fun GameLibreScreen(navController: NavController) {
+fun GameLibreScreen(
+    navController: NavController,
+    lobbyCode: String,
+    username: String
+) {
     val context = LocalContext.current
     val drawingView = remember { DrawingView(context) }
     val colors = listOf(
@@ -223,12 +227,21 @@ fun GameLibreScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Tiempo restante: $timeLeft segundos",
-                color = Color.White,
-                modifier = Modifier.padding(top = 8.dp),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Button(
+                onClick = {
+                    navController.navigate("lobby_screen/$lobbyCode/$username")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFFA040),
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Volver al Lobby")
+            }
         }
     }
 }

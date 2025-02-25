@@ -188,8 +188,14 @@ class MainActivity : ComponentActivity() {
                         composable("game_erase_una_vez_screen") {
                             GameEraseUnaVezScreen(navController)
                         }
-                        composable("game_libre_screen") {
-                            GameLibreScreen(navController)
+                        composable("game_libre_screen/{lobbyCode}/{username}") { backStackEntry ->
+                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
+                            val username = backStackEntry.arguments?.getString("username")
+                            GameLibreScreen(
+                                navController = navController,
+                                lobbyCode = lobbyCode ?: "",
+                                username = username ?: ""
+                            )
                         }
                         composable("game_ojo_de_aguila_screen") {
                             GameOjoDeAguilaScreen(navController)

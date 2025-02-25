@@ -113,7 +113,7 @@ fun GamesList(
             "Modo Libre",
             "Dibuja lo que quieras",
             "Dibuja lo que quieras sin restricciones. Elige un tema o déjalo al azar para una experiencia relajada.",
-            "game_libre_screen",
+            "game_libre_screen/{lobbyCode}/{username}",
             "https://cdn-icons-png.freepik.com/512/12141/12141689.png?ga=GA1.1.1882402121.1739594082",
             false
         ),
