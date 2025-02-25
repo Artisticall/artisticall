@@ -16,7 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.dadm.artisticall.gamemodes.ojoDeAguila.EvaluateDrawingScreen
+import com.dadm.artisticall.gamemodes.EvaluateDrawingScreen
 import com.dadm.artisticall.gamemodes.GameBatallaPincelesScreen
 import com.dadm.artisticall.gamemodes.GameColaborativoScreen
 import com.dadm.artisticall.gamemodes.GameDesafioScreen
@@ -39,10 +39,7 @@ import com.dadm.artisticall.gamemodes.GameQueEsEstoScreen
 import com.dadm.artisticall.gamemodes.modoAdivina.GameAdivinaScreen
 import com.dadm.artisticall.gamemodes.modoSolo.GameSoloScreen
 import com.dadm.artisticall.gamemodes.modoSolo.SoloGuess
-import com.dadm.artisticall.gamemodes.ojoDeAguila.EvaluateDrawingScreen
-import com.dadm.artisticall.gamemodes.ojoDeAguila.EvaluateOtherScreen
 import com.dadm.artisticall.gamemodes.ojoDeAguila.ResultsScreen
-import com.dadm.artisticall.gamemodes.ojoDeAguila.WaitingResultsScreen
 import com.dadm.artisticall.lobby.GameMode
 import com.dadm.artisticall.lobby.PointsScreen
 import com.dadm.artisticall.login.LoginScreen
@@ -157,85 +154,6 @@ class MainActivity : ComponentActivity() {
                            )
                        }
 
-                        // Añade estas rutas a tu NavHost existente
-
-                        composable(
-                            route = "evaluate_screen/{originalImageUrl}/{drawingImagePath}/{lobbyCode}/{username}",
-                            arguments = listOf(
-                                navArgument("originalImageUrl") { type = NavType.StringType },
-                                navArgument("drawingImagePath") { type = NavType.StringType },
-                                navArgument("lobbyCode") { type = NavType.StringType },
-                                navArgument("username") { type = NavType.StringType }
-                            )
-                        ) { backStackEntry ->
-                            val originalImageUrl = backStackEntry.arguments?.getString("originalImageUrl") ?: ""
-                            val drawingImagePath = backStackEntry.arguments?.getString("drawingImagePath") ?: ""
-                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode") ?: ""
-                            val username = backStackEntry.arguments?.getString("username") ?: ""
-
-                            EvaluateDrawingScreen(
-                                navController = navController,
-                                originalImageUrl = originalImageUrl,
-                                drawingImagePath = drawingImagePath,
-                                lobbyCode = lobbyCode,
-                                username = username
-                            )
-                        }
-
-                        composable(
-                            route = "evaluate_other_screen/{lobbyCode}/{username}/{drawingId}",
-                            arguments = listOf(
-                                navArgument("lobbyCode") { type = NavType.StringType },
-                                navArgument("username") { type = NavType.StringType },
-                                navArgument("drawingId") { type = NavType.StringType }
-                            )
-                        ) { backStackEntry ->
-                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode") ?: ""
-                            val username = backStackEntry.arguments?.getString("username") ?: ""
-                            val drawingId = backStackEntry.arguments?.getString("drawingId") ?: ""
-
-                            EvaluateOtherScreen(
-                                navController = navController,
-                                lobbyCode = lobbyCode,
-                                username = username,
-                                drawingId = drawingId
-                            )
-                        }
-
-                        composable(
-                            route = "waiting_results_screen/{lobbyCode}/{username}",
-                            arguments = listOf(
-                                navArgument("lobbyCode") { type = NavType.StringType },
-                                navArgument("username") { type = NavType.StringType }
-                            )
-                        ) { backStackEntry ->
-                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode") ?: ""
-                            val username = backStackEntry.arguments?.getString("username") ?: ""
-
-                            WaitingResultsScreen(
-                                navController = navController,
-                                lobbyCode = lobbyCode,
-                                username = username
-                            )
-                        }
-
-                        composable(
-                            route = "results_screen/{lobbyCode}/{username}",
-                            arguments = listOf(
-                                navArgument("lobbyCode") { type = NavType.StringType },
-                                navArgument("username") { type = NavType.StringType }
-                            )
-                        ) { backStackEntry ->
-                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode") ?: ""
-                            val username = backStackEntry.arguments?.getString("username") ?: ""
-
-                            ResultsScreen(
-                                navController = navController,
-                                lobbyCode = lobbyCode,
-                                username = username
-                            )
-                        }
-
                         composable("points_screen") {
                             PointsScreen(navController)
                         }
@@ -279,12 +197,8 @@ class MainActivity : ComponentActivity() {
                                 username = username ?: ""
                             )
                         }
-                        composable("game_ojo_de_aguila_screen") { backStackEntry ->
-                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
-                            val username = backStackEntry.arguments?.getString("username")
-                            GameOjoDeAguilaScreen(  navController = navController,
-                                lobbyCode = lobbyCode ?: "",
-                                username = username ?: "")
+                        composable("game_ojo_de_aguila_screen") {
+                            GameOjoDeAguilaScreen(navController)
                         }
                         composable("game_colaborativo_screen") {
                             GameColaborativoScreen(navController)
@@ -292,14 +206,8 @@ class MainActivity : ComponentActivity() {
                         composable("game_desafio_screen") {
                             GameDesafioScreen(navController)
                         }
-                        composable("results_screen") { backStackEntry ->
-                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
-                            val username = backStackEntry.arguments?.getString("username")
-                            ResultsScreen(
-                                navController = navController,
-                                lobbyCode = lobbyCode ?: "",
-                                username = username ?: ""
-                            )
+                        composable("results_screen") {
+                            ResultsScreen(navController = navController)
                         }
                         composable(
                             route = "evaluate_screen/{originalImage}/{drawingPath}",
@@ -308,16 +216,10 @@ class MainActivity : ComponentActivity() {
                                 navArgument("drawingPath") { type = NavType.StringType }
                             )
                         ) { backStackEntry ->
-                            val lobbyCode = backStackEntry.arguments?.getString("lobbyCode")
-                            val username = backStackEntry.arguments?.getString("username")
                             EvaluateDrawingScreen(
                                 navController = navController,
-                                originalImageUrl = backStackEntry.arguments?.getString("originalImage")
-                                    ?: "",
-                                drawingImagePath = backStackEntry.arguments?.getString("drawingPath")
-                                    ?: "",
-                                lobbyCode = lobbyCode ?: "",
-                                username = username ?: ""
+                                originalImageUrl = backStackEntry.arguments?.getString("originalImage") ?: "",
+                                drawingImagePath = backStackEntry.arguments?.getString("drawingPath") ?: ""
                             )
                         }
                     },
