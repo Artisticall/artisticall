@@ -44,38 +44,6 @@ fun GameLibreScreen(
     var currentColor by remember { mutableStateOf(Color.Black) }
     var currentLineSize by remember { mutableStateOf(defaultLineSize) }
 
-    // Estado para el temporizador
-    var timeLeft by remember { mutableStateOf(50) }
-    var isTimerRunning by remember { mutableStateOf(true) }
-
-    // Función para guardar la imagen
-    fun saveImage() {
-        val bitmap = drawingView.getBitmap()
-        val file = File(context.cacheDir, "drawing_image.png")
-        try {
-            val outputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-            outputStream.flush()
-            outputStream.close()
-
-            val encodedFilePath = Uri.encode(file.absolutePath)
-            navController.navigate("guess_screen/$encodedFilePath")
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    // Iniciar el temporizador
-    LaunchedEffect(isTimerRunning) {
-        while (isTimerRunning && timeLeft > 0) {
-            delay(1000)
-            timeLeft -= 1
-        }
-        if (timeLeft == 0) {
-            saveImage()
-        }
-    }
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
